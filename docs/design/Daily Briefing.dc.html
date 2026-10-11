@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="stylesheet" href="_ds/classical-7270028e-edec-4a55-bb0a-75f7094f65fe/styles.css">
+<script src="_ds/classical-7270028e-edec-4a55-bb0a-75f7094f65fe/_ds_bundle.js"></script>
+<style>body{margin:0;background:var(--color-surface);font-family:var(--font-body);color:var(--color-text)}a{color:var(--color-accent-700)}a:hover{color:var(--color-accent-900)}.dv-turn{padding:40px 44px 32px;border-bottom:1px solid var(--color-divider)}.dv-thd{display:flex;align-items:baseline;gap:10px;margin:0 0 20px}.dv-tid{font:600 10px ui-monospace,Menlo,monospace;padding:3px 7px;background:var(--color-text);color:var(--color-bg);border-radius:4px;text-decoration:none}.dv-tname{font:600 13px/1.2 var(--font-body)}.dv-opts{display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start}.dv-opt{flex:none;display:flex;flex-direction:column;gap:10px}.dv-oid{font:600 10.5px ui-monospace,Menlo,monospace;padding:3px 7px;background:var(--color-divider);color:var(--color-text);border-radius:5px;text-decoration:none}.dv-olabel{display:flex;align-items:baseline;gap:8px;font:400 12px/1.3 var(--font-body);color:var(--color-neutral-700);max-width:410px}.dv-next{margin:28px 0 0;font:12px/1.5 var(--font-body);color:var(--color-neutral-700)}</style>
+</helmet>
+<section class="dv-turn" id="t1">
+<div class="dv-thd"><a class="dv-tid" href="#t1">1</a><span class="dv-tname">Daily briefing — three ways to read the same morning</span></div>
+<p style="margin:0 0 28px;max-width:720px;font-size:13px;line-height:1.55;color:var(--color-neutral-700);text-align:justify;text-wrap:pretty">Sunday, 11 October. Each phone is live: expand events, mark the reading done, tick off sets. Same content in all three; only the reading order changes — <a class="dv-oid" href="#1a">1a</a> one long broadsheet, <a class="dv-oid" href="#1b">1b</a> one section at a time, <a class="dv-oid" href="#1c">1c</a> a contents page that opens each section as a sheet.</p>
+<div class="dv-opts">
+
+<div class="dv-opt" id="1a">
+<div class="dv-olabel"><a class="dv-oid" href="#1a">1a</a>The Morning Paper — one scroll, masthead to colophon</div>
+<div style="width:390px;height:844px;border-radius:54px;border:11px solid var(--color-neutral-900);background:var(--color-bg);position:relative;overflow:hidden;box-shadow:var(--shadow-lg);box-sizing:content-box">
+<div style="position:absolute;top:11px;left:50%;transform:translateX(-50%);width:122px;height:35px;border-radius:20px;background:var(--color-neutral-900);z-index:5"></div>
+<div style="position:absolute;top:0;left:0;right:0;height:54px;display:flex;justify-content:space-between;align-items:center;padding:0 34px;font:600 15px var(--font-body);z-index:4;background:var(--color-bg)"><span style="font-variant-numeric:tabular-nums">7:04</span><span style="display:flex;gap:6px;align-items:center"><span style="width:17px;height:10px;border:1.5px solid currentColor;border-radius:3px;display:block"></span></span></div>
+<div style="position:absolute;top:54px;bottom:0;left:0;right:0;overflow-y:auto;padding:8px 26px 48px">
+<div style="text-align:center;border-bottom:1px solid var(--color-text);padding-bottom:10px">
+<div style="font:400 11px var(--font-body);letter-spacing:.18em;text-transform:uppercase;color:var(--color-neutral-700)">Vol. XLII · No. 284</div>
+<div style="font:400 44px/1 var(--font-heading);margin:6px 0 4px">The Morning</div>
+<div style="display:flex;justify-content:space-between;font:400 11px var(--font-body);border-top:1px solid var(--color-divider);padding-top:7px;margin-top:8px;font-variant-numeric:tabular-nums"><span>Sunday</span><span>11 October 2026</span><span>Brooklyn</span></div>
+</div>
+<div style="padding:20px 0;border-bottom:1px solid var(--color-divider)">
+<div style="font:400 11px var(--font-body);letter-spacing:.14em;text-transform:uppercase;color:var(--color-accent-700)">Weather</div>
+<div style="display:flex;align-items:flex-end;gap:14px;margin-top:6px">
+<div style="font:400 72px/0.9 var(--font-heading);font-variant-numeric:tabular-nums">58°</div>
+<div style="padding-bottom:6px"><div style="font:600 20px/1.1 var(--font-heading)">Partly cloudy</div><div style="font-size:13px;color:var(--color-neutral-700);font-variant-numeric:tabular-nums">High 64° · Low 47° · Rain 10%</div></div>
+</div>
+<p style="margin:12px 0 14px;font-size:14px;line-height:1.5;text-align:justify;text-wrap:pretty">A light-jacket morning. Clouds thin by noon and the afternoon stays dry; wind from the northwest at 6 mph.</p>
+<div style="display:grid;grid-template-columns:repeat(6,1fr);border-top:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider)">
+<sc-for list="{{ hourly }}" as="h" hint-placeholder-count="6"><div style="text-align:center;padding:8px 0;font-variant-numeric:tabular-nums"><div style="font-size:11px;color:var(--color-neutral-700)">{{ h.t }}</div><div style="font:400 20px var(--font-heading)">{{ h.v }}</div></div></sc-for>
+</div>
+</div>
+<div style="padding:20px 0;border-bottom:1px solid var(--color-divider)">
+<div style="display:flex;justify-content:space-between;align-items:baseline"><div style="font:400 11px var(--font-body);letter-spacing:.14em;text-transform:uppercase;color:var(--color-accent-700)">The Day</div><div style="font-size:11px;color:var(--color-neutral-700)">4 engagements</div></div>
+<div style="margin-top:8px">
+<sc-for list="{{ evA }}" as="ev" hint-placeholder-count="4">
+<div onClick="{{ ev.onToggle }}" style="display:grid;grid-template-columns:58px 1fr 16px;gap:10px;padding:11px 0;border-bottom:1px solid var(--color-divider);cursor:pointer;align-items:baseline">
+<div style="font:600 17px var(--font-heading);font-variant-numeric:tabular-nums">{{ ev.time }}</div>
+<div><div style="font-size:15px">{{ ev.title }}</div><sc-if value="{{ ev.open }}" hint-placeholder-val="{{ false }}"><div style="font-size:12px;line-height:1.5;color:var(--color-neutral-700);margin-top:4px">{{ ev.where }}<br>{{ ev.note }}</div></sc-if></div>
+<div style="font-size:14px;color:var(--color-accent);transform:rotate({{ ev.rot }});transition:transform .2s">›</div>
+</div>
+</sc-for>
+</div>
+</div>
+<div style="padding:22px 0;border-bottom:1px solid var(--color-divider)">
+<div style="display:flex;justify-content:space-between;align-items:baseline"><div style="font:400 11px var(--font-body);letter-spacing:.14em;text-transform:uppercase;color:var(--color-accent-700)">Scripture · Day 284</div><div style="font-size:11px;color:var(--color-neutral-700);font-variant-numeric:tabular-nums">{{ streakA }}-day streak</div></div>
+<div style="font:600 24px/1.15 var(--font-heading);margin:8px 0 2px">Psalm 23 · Luke 15:11–32</div>
+<blockquote style="margin:14px 0;padding:0 0 0 14px;border-left:1px solid var(--color-accent);font:italic 400 20px/1.35 var(--font-heading);text-wrap:pretty">“The LORD is my shepherd; I shall not want. He maketh me to lie down in green pastures: he leadeth me beside the still waters. He restoreth my soul.”</blockquote>
+<div style="font-size:12px;color:var(--color-neutral-700);margin-bottom:14px">Psalm 23:1–3 · KJV · about 6 min</div>
+<button class="btn {{ readClsA }}" onClick="{{ toggleReadA }}" style="width:100%">{{ readLabelA }}</button>
+</div>
+<div style="padding:22px 0">
+<div style="display:flex;justify-content:space-between;align-items:baseline"><div style="font:400 11px var(--font-body);letter-spacing:.14em;text-transform:uppercase;color:var(--color-accent-700)">Training</div><div style="font-size:11px;color:var(--color-neutral-700);font-variant-numeric:tabular-nums">{{ progA }}</div></div>
+<div style="font:600 24px/1.15 var(--font-heading);margin:8px 0 4px">Lower body</div>
+<div style="font-size:12px;color:var(--color-neutral-700);margin-bottom:8px">Week 6 · Day 3 · about 50 min</div>
+<sc-for list="{{ exA }}" as="ex" hint-placeholder-count="4">
+<div onClick="{{ ex.onToggle }}" style="display:flex;gap:12px;align-items:center;padding:11px 0;border-bottom:1px solid var(--color-divider);cursor:pointer">
+<div style="width:22px;height:22px;flex:none;border-radius:50%;border:1px solid var(--color-accent);display:flex;align-items:center;justify-content:center;color:var(--color-accent-700);font-size:13px">{{ ex.mark }}</div>
+<div style="flex:1;opacity:{{ ex.op }};text-decoration:{{ ex.dec }}"><div style="font-size:15px">{{ ex.name }}</div></div>
+<div style="font-size:13px;font-variant-numeric:tabular-nums;color:var(--color-neutral-700);opacity:{{ ex.op }}">{{ ex.spec }}</div>
+</div>
+</sc-for>
+</div>
+<div style="text-align:center;font:italic 400 15px var(--font-heading);color:var(--color-neutral-700);padding-top:8px">— Fin —</div>
+</div>
+</div>
+</div>
+
+<div class="dv-opt" id="1b">
+<div class="dv-olabel"><a class="dv-oid" href="#1b">1b</a>Chapters — four pages, read in order, tap the numerals to jump</div>
+<div style="width:390px;height:844px;border-radius:54px;border:11px solid var(--color-neutral-900);background:var(--color-bg);position:relative;overflow:hidden;box-shadow:var(--shadow-lg);box-sizing:content-box">
+<div style="position:absolute;top:11px;left:50%;transform:translateX(-50%);width:122px;height:35px;border-radius:20px;background:var(--color-neutral-900);z-index:5"></div>
+<div style="position:absolute;top:0;left:0;right:0;height:54px;display:flex;justify-content:space-between;align-items:center;padding:0 34px;font:600 15px var(--font-body);z-index:4"><span style="font-variant-numeric:tabular-nums">7:04</span><span style="width:17px;height:10px;border:1.5px solid currentColor;border-radius:3px;display:block"></span></div>
+<div style="position:absolute;top:62px;left:26px;right:26px;display:flex;justify-content:space-between;align-items:baseline">
+<div style="font:400 13px var(--font-body);color:var(--color-neutral-700)">Sunday, 11 October</div>
+<div style="display:flex;gap:16px">
+<sc-for list="{{ bTabs }}" as="tb" hint-placeholder-count="4"><div onClick="{{ tb.go }}" style="font:600 16px var(--font-heading);cursor:pointer;padding-bottom:3px;color:{{ tb.color }};border-bottom:1px solid {{ tb.line }}">{{ tb.n }}</div></sc-for>
+</div>
+</div>
+<div style="position:absolute;top:104px;bottom:104px;left:0;right:0;overflow:hidden">
+<div style="display:flex;width:400%;height:100%;transform:translateX({{ bTx }});transition:transform .5s cubic-bezier(.2,.7,.2,1)">
+
+<div style="width:25%;padding:20px 26px;box-sizing:border-box;overflow-y:auto">
+<div style="font:400 12px var(--font-body);letter-spacing:.14em;text-transform:uppercase;color:var(--color-accent-700)">Chapter I</div>
+<div style="font:400 40px/1 var(--font-heading);margin:6px 0 26px">The Sky</div>
+<div style="font:400 120px/0.85 var(--font-heading);font-variant-numeric:tabular-nums">58°</div>
+<div style="font:600 22px var(--font-heading);margin-top:10px">Partly cloudy, clearing</div>
+<p style="font-size:15px;line-height:1.55;text-align:justify;text-wrap:pretty;margin:12px 0 22px">A light-jacket morning. Clouds thin by noon and the afternoon stays dry; wind from the northwest at 6 mph.</p>
+<div style="display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--color-divider)">
+<sc-for list="{{ wxFacts }}" as="f" hint-placeholder-count="4"><div style="padding:12px 0;border-bottom:1px solid var(--color-divider)"><div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--color-neutral-700)">{{ f.k }}</div><div style="font:400 22px var(--font-heading);font-variant-numeric:tabular-nums">{{ f.v }}</div></div></sc-for>
+</div>
+</div>
+
+<div style="width:25%;padding:20px 26px;box-sizing:border-box;overflow-y:auto">
+<div style="font:400 12px var(--font-body);letter-spacing:.14em;text-transform:uppercase;color:var(--color-accent-700)">Chapter II</div>
+<div style="font:400 40px/1 var(--font-heading);margin:6px 0 22px">The Day</div>
+<div style="position:relative;padding-left:22px;border-left:1px solid var(--color-accent);margin-left:6px">
+<sc-for list="{{ evB }}" as="ev" hint-placeholder-count="4">
+<div onClick="{{ ev.onToggle }}" style="position:relative;padding:0 0 22px;cursor:pointer">
+<div style="position:absolute;left:-27px;top:7px;width:9px;height:9px;border-radius:50%;border:1px solid var(--color-accent);background:var(--color-bg)"></div>
+<div style="font:600 15px var(--font-heading);color:var(--color-accent-700);font-variant-numeric:tabular-nums">{{ ev.time }}</div>
+<div style="font:400 24px/1.15 var(--font-heading)">{{ ev.title }}</div>
+<div style="font-size:13px;color:var(--color-neutral-700);margin-top:2px">{{ ev.where }}</div>
+<sc-if value="{{ ev.open }}" hint-placeholder-val="{{ false }}"><div style="font-size:13px;line-height:1.5;margin-top:6px;text-align:justify">{{ ev.note }}</div></sc-if>
+</div>
+</sc-for>
+</div>
+</div>
+
+<div style="width:25%;padding:20px 26px;box-sizing:border-box;overflow-y:auto">
+<div style="font:400 12px var(--font-body);letter-spacing:.14em;text-transform:uppercase;color:var(--color-accent-700)">Chapter III</div>
+<div style="font:400 40px/1 var(--font-heading);margin:6px 0 4px">The Word</div>
+<div style="font-size:13px;color:var(--color-neutral-700);margin-bottom:20px;font-variant-numeric:tabular-nums">Day 284 of 365 · {{ streakB }}-day streak</div>
+<div style="font:600 13px var(--font-body);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px">Psalm 23</div>
+<p style="font:400 21px/1.4 var(--font-heading);margin:0 0 16px;text-align:justify;text-wrap:pretty"><span style="float:left;font:400 58px/0.8 var(--font-heading);color:var(--color-accent);padding:6px 6px 0 0">T</span>he LORD is my shepherd; I shall not want. He maketh me to lie down in green pastures: he leadeth me beside the still waters. He restoreth my soul: he leadeth me in the paths of righteousness for his name’s sake.</p>
+<div style="border-top:1px solid var(--color-divider);padding-top:12px;font-size:13px;color:var(--color-neutral-700);margin-bottom:20px">Then: Luke 15:11–32, the prodigal son · 6 min</div>
+<button class="btn {{ readClsB }}" onClick="{{ toggleReadB }}" style="width:100%">{{ readLabelB }}</button>
+</div>
+
+<div style="width:25%;padding:20px 26px;box-sizing:border-box;overflow-y:auto">
+<div style="font:400 12px var(--font-body);letter-spacing:.14em;text-transform:uppercase;color:var(--color-accent-700)">Chapter IV</div>
+<div style="font:400 40px/1 var(--font-heading);margin:6px 0 4px">The Body</div>
+<div style="font-size:13px;color:var(--color-neutral-700);margin-bottom:16px">Lower body · Week 6, Day 3 · 50 min</div>
+<div style="height:2px;background:var(--color-divider);margin-bottom:6px;position:relative"><div style="position:absolute;left:0;top:0;bottom:0;width:{{ pctB }};background:var(--color-accent);transition:width .3s"></div></div>
+<div style="font-size:12px;color:var(--color-neutral-700);margin-bottom:10px;font-variant-numeric:tabular-nums">{{ progB }}</div>
+<sc-for list="{{ exB }}" as="ex" hint-placeholder-count="4">
+<div onClick="{{ ex.onToggle }}" style="padding:14px 0;border-bottom:1px solid var(--color-divider);cursor:pointer;display:grid;grid-template-columns:28px 1fr;gap:8px">
+<div style="font:600 18px var(--font-heading);color:var(--color-accent-700);font-variant-numeric:tabular-nums">{{ ex.num }}</div>
+<div style="opacity:{{ ex.op }}"><div style="font:400 22px/1.1 var(--font-heading);text-decoration:{{ ex.dec }}">{{ ex.name }}</div><div style="font-size:13px;color:var(--color-neutral-700);font-variant-numeric:tabular-nums;margin-top:2px">{{ ex.spec }} · {{ ex.tap }}</div></div>
+</div>
+</sc-for>
+</div>
+
+</div>
+</div>
+<div style="position:absolute;bottom:34px;left:26px;right:26px;display:flex;gap:12px;align-items:center">
+<button class="btn btn-ghost" onClick="{{ bPrev }}" disabled="{{ bAtStart }}" style="flex:none">‹ Back</button>
+<div style="flex:1;text-align:center;font:italic 400 15px var(--font-heading);color:var(--color-neutral-700)">{{ bFolio }}</div>
+<button class="btn btn-primary" onClick="{{ bNext }}" style="flex:none">{{ bNextLabel }}</button>
+</div>
+<div style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:134px;height:5px;border-radius:3px;background:var(--color-text)"></div>
+</div>
+</div>
+
+<div class="dv-opt" id="1c">
+<div class="dv-olabel"><a class="dv-oid" href="#1c">1c</a>Contents — the morning as an index; each entry opens as a sheet</div>
+<div style="width:390px;height:844px;border-radius:54px;border:11px solid var(--color-neutral-900);background:var(--color-bg);position:relative;overflow:hidden;box-shadow:var(--shadow-lg);box-sizing:content-box">
+<div style="position:absolute;top:11px;left:50%;transform:translateX(-50%);width:122px;height:35px;border-radius:20px;background:var(--color-neutral-900);z-index:5"></div>
+<div style="position:absolute;top:0;left:0;right:0;height:54px;display:flex;justify-content:space-between;align-items:center;padding:0 34px;font:600 15px var(--font-body);z-index:4"><span style="font-variant-numeric:tabular-nums">7:04</span><span style="width:17px;height:10px;border:1.5px solid currentColor;border-radius:3px;display:block"></span></div>
+<div style="position:absolute;top:54px;left:0;right:0;bottom:0;padding:40px 30px">
+<div style="font:400 13px var(--font-body);letter-spacing:.16em;text-transform:uppercase;color:var(--color-neutral-700)">Sunday · 11 October</div>
+<div style="font:400 50px/1 var(--font-heading);margin:10px 0 6px">Good morning.</div>
+<div style="font:italic 400 19px/1.3 var(--font-heading);color:var(--color-neutral-700)">Four things before the day begins.</div>
+<div style="height:1px;background:var(--color-text);margin:30px 0 4px"></div>
+<sc-for list="{{ toc }}" as="r" hint-placeholder-count="4">
+<div onClick="{{ r.open }}" style="padding:20px 0;border-bottom:1px solid var(--color-divider);cursor:pointer" style-hover="background:var(--color-accent-100)">
+<div style="display:flex;align-items:baseline;gap:10px">
+<div style="font:600 15px var(--font-heading);color:var(--color-accent-700);width:22px">{{ r.n }}</div>
+<div style="font:400 26px/1 var(--font-heading)">{{ r.title }}</div>
+<div style="flex:1;border-bottom:1px dotted var(--color-neutral-500);transform:translateY(-5px)"></div>
+<div style="font:400 22px var(--font-heading);font-variant-numeric:tabular-nums">{{ r.fig }}</div>
+</div>
+<div style="display:flex;justify-content:space-between;padding-left:32px;margin-top:6px;font-size:13px;color:var(--color-neutral-700)"><span>{{ r.sub }}</span><span style="color:{{ r.statusColor }}">{{ r.status }}</span></div>
+</div>
+</sc-for>
+<div style="margin-top:28px;font:italic 400 15px/1.4 var(--font-heading);color:var(--color-neutral-700);text-align:center">{{ cSummary }}</div>
+</div>
+<div onClick="{{ closeSheet }}" style="position:absolute;inset:0;background:var(--color-neutral-900);opacity:{{ cBackdrop }};pointer-events:{{ cPE }};transition:opacity .3s;z-index:6"></div>
+<div style="position:absolute;left:0;right:0;bottom:0;height:720px;background:var(--color-bg);border-radius:18px 18px 0 0;border-top:1px solid var(--color-divider);box-shadow:var(--shadow-lg);transform:translateY({{ cSheetY }});transition:transform .42s cubic-bezier(.2,.7,.2,1);z-index:7;display:flex;flex-direction:column">
+<div style="width:38px;height:4px;border-radius:2px;background:var(--color-neutral-300);margin:10px auto 0"></div>
+<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 26px 0"><div style="font:400 12px var(--font-body);letter-spacing:.14em;text-transform:uppercase;color:var(--color-accent-700)">{{ cKicker }}</div><button class="btn btn-ghost" onClick="{{ closeSheet }}">Done</button></div>
+<div style="flex:1;overflow-y:auto;padding:4px 26px 40px">
+<sc-if value="{{ sWx }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;align-items:flex-end;gap:14px;margin-top:10px"><div style="font:400 88px/0.85 var(--font-heading);font-variant-numeric:tabular-nums">58°</div><div style="padding-bottom:6px"><div style="font:600 22px var(--font-heading)">Partly cloudy</div><div style="font-size:13px;color:var(--color-neutral-700)">Feels like 55°</div></div></div>
+<p style="font-size:15px;line-height:1.55;text-align:justify;text-wrap:pretty;margin:16px 0 18px">A light-jacket morning. Clouds thin by noon and the afternoon stays dry; wind from the northwest at 6 mph.</p>
+<sc-for list="{{ hourly }}" as="h" hint-placeholder-count="6"><div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--color-divider);font-variant-numeric:tabular-nums"><span style="font-size:14px;color:var(--color-neutral-700)">{{ h.t }}</span><span style="font:400 20px var(--font-heading)">{{ h.v }}</span></div></sc-for>
+</sc-if>
+<sc-if value="{{ sDay }}" hint-placeholder-val="{{ false }}">
+<div style="font:400 34px/1.05 var(--font-heading);margin:8px 0 14px">Four engagements, the first at half past nine.</div>
+<sc-for list="{{ evC }}" as="ev" hint-placeholder-count="4">
+<div onClick="{{ ev.onToggle }}" style="display:grid;grid-template-columns:58px 1fr;gap:10px;padding:13px 0;border-top:1px solid var(--color-divider);cursor:pointer">
+<div style="font:600 17px var(--font-heading);font-variant-numeric:tabular-nums">{{ ev.time }}</div>
+<div><div style="font-size:15px">{{ ev.title }}</div><div style="font-size:12px;color:var(--color-neutral-700);margin-top:2px">{{ ev.where }}</div><sc-if value="{{ ev.open }}" hint-placeholder-val="{{ false }}"><div style="font-size:13px;line-height:1.5;margin-top:6px">{{ ev.note }}</div></sc-if></div>
+</div>
+</sc-for>
+</sc-if>
+<sc-if value="{{ sWord }}" hint-placeholder-val="{{ false }}">
+<div style="font:600 26px/1.15 var(--font-heading);margin:8px 0 2px">Psalm 23</div>
+<div style="font-size:13px;color:var(--color-neutral-700);margin-bottom:14px">Day 284 of 365 · {{ streakC }}-day streak</div>
+<p style="font:400 21px/1.42 var(--font-heading);margin:0 0 14px;text-align:justify;text-wrap:pretty">The LORD is my shepherd; I shall not want. He maketh me to lie down in green pastures: he leadeth me beside the still waters. He restoreth my soul: he leadeth me in the paths of righteousness for his name’s sake.</p>
+<div style="border-top:1px solid var(--color-divider);padding-top:12px;font-size:13px;color:var(--color-neutral-700);margin-bottom:20px">Then: Luke 15:11–32 · about 6 min</div>
+<button class="btn {{ readClsC }}" onClick="{{ toggleReadC }}" style="width:100%">{{ readLabelC }}</button>
+</sc-if>
+<sc-if value="{{ sBody }}" hint-placeholder-val="{{ false }}">
+<div style="font:600 26px/1.15 var(--font-heading);margin:8px 0 2px">Lower body</div>
+<div style="font-size:13px;color:var(--color-neutral-700);margin-bottom:10px">Week 6 · Day 3 · {{ progC }}</div>
+<sc-for list="{{ exC }}" as="ex" hint-placeholder-count="4">
+<div onClick="{{ ex.onToggle }}" style="display:flex;gap:12px;align-items:center;padding:14px 0;border-bottom:1px solid var(--color-divider);cursor:pointer">
+<div style="width:24px;height:24px;flex:none;border-radius:50%;border:1px solid var(--color-accent);display:flex;align-items:center;justify-content:center;color:var(--color-accent-700);font-size:13px">{{ ex.mark }}</div>
+<div style="flex:1;opacity:{{ ex.op }}"><div style="font-size:15px;text-decoration:{{ ex.dec }}">{{ ex.name }}</div><div style="font-size:12px;color:var(--color-neutral-700);font-variant-numeric:tabular-nums">{{ ex.spec }}</div></div>
+</div>
+</sc-for>
+</sc-if>
+</div>
+</div>
+<div style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:134px;height:5px;border-radius:3px;background:var(--color-text);z-index:8"></div>
+</div>
+</div>
+
+</div>
+<p class="dv-next">Try next: "build out <a class="dv-oid" href="#1b">1b</a> with a rest-timer between sets" · "<a class="dv-oid" href="#1c">1c</a> but with the masthead from <a class="dv-oid" href="#1a">1a</a>" · "add an evening recap screen"</p>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const EVENTS = [
+  { time: '9:30', title: 'Morning service', where: 'Grace Fellowship, 410 Union St', note: 'Ends around 11:15. Bring the borrowed commentary back to Pastor Jim.' },
+  { time: '12:30', title: 'Lunch with Sarah & Tom', where: 'Juniper Kitchen, 214 Elm St', note: 'Table for four under your name. Twelve minutes on foot.' },
+  { time: '4:00', title: 'Call Mom', where: 'FaceTime', note: 'Ask about the trip in November.' },
+  { time: '7:00', title: 'Plan the week', where: 'Desk · 30 min', note: 'Review Monday’s deadlines and block two focus mornings.' }
+];
+const EX = [
+  { name: 'Back squat', spec: '4 × 6 · 185 lb' },
+  { name: 'Romanian deadlift', spec: '3 × 8 · 135 lb' },
+  { name: 'Walking lunge', spec: '3 × 12 · 40 lb' },
+  { name: 'Plank', spec: '3 × 45 s' }
+];
+const ROMAN = ['I', 'II', 'III', 'IV'];
+const FOLIO = ['The Sky', 'The Day', 'The Word', 'The Body'];
+const KICKERS = { wx: 'I · The Sky', day: 'II · The Day', word: 'III · The Word', body: 'IV · The Body' };
+
+class Component extends DCLogic {
+  state = {
+    a: { read: false, done: {}, open: null },
+    b: { read: false, done: {}, open: 0, page: 0 },
+    c: { read: false, done: {}, open: null, sheet: null }
+  };
+  upd(k, fn) { this.setState(s => ({ [k]: { ...s[k], ...fn(s[k]) } })); }
+  events(k) {
+    const o = this.state[k];
+    return EVENTS.map((e, i) => ({ ...e, open: o.open === i, rot: o.open === i ? '90deg' : '0deg',
+      onToggle: () => this.upd(k, s => ({ open: s.open === i ? null : i })) }));
+  }
+  exercises(k) {
+    const o = this.state[k];
+    return EX.map((e, i) => { const d = !!o.done[i]; return { ...e, num: ROMAN[i], mark: d ? '✓' : '', op: d ? 0.45 : 1, dec: d ? 'line-through' : 'none', tap: d ? 'done' : 'tap when done',
+      onToggle: () => this.upd(k, s => ({ done: { ...s.done, [i]: !s.done[i] } })) }; });
+  }
+  count(k) { return Object.values(this.state[k].done).filter(Boolean).length; }
+  read(k) {
+    const r = this.state[k].read;
+    return { label: r ? '✓ Read today' : 'Mark as read', cls: r ? 'btn-secondary' : 'btn-primary', streak: r ? 42 : 41,
+      toggle: () => this.upd(k, s => ({ read: !s.read })) };
+  }
+  renderVals() {
+    const ra = this.read('a'), rb = this.read('b'), rc = this.read('c');
+    const b = this.state.b, c = this.state.c;
+    const go = p => this.upd('b', () => ({ page: Math.max(0, Math.min(3, p)) }));
+    const nc = this.count('c');
+    const openC = key => () => this.upd('c', () => ({ sheet: key }));
+    const toc = [
+      { n: 'I', title: 'The Sky', fig: '58°', sub: 'Partly cloudy · high 64°', status: '', open: openC('wx') },
+      { n: 'II', title: 'The Day', fig: '4', sub: 'First at 9:30, Morning service', status: '', open: openC('day') },
+      { n: 'III', title: 'The Word', fig: '284', sub: 'Psalm 23 · Luke 15', status: c.read ? 'Read' : 'Unread', open: openC('word') },
+      { n: 'IV', title: 'The Body', fig: `${nc}/4`, sub: 'Lower body · 50 min', status: nc === 4 ? 'Complete' : '', open: openC('body') }
+    ].map(r => ({ ...r, statusColor: 'var(--color-accent-700)' }));
+    const left = (c.read ? 0 : 1) + (nc === 4 ? 0 : 1);
+    return {
+      hourly: [['8a','52°'],['10a','56°'],['12p','61°'],['2p','64°'],['4p','62°'],['6p','57°']].map(([t, v]) => ({ t, v })),
+      wxFacts: [['High','64°'],['Low','47°'],['Rain','10%'],['Sunset','6:24']].map(([k, v]) => ({ k, v })),
+      evA: this.events('a'), evB: this.events('b'), evC: this.events('c'),
+      exA: this.exercises('a'), exB: this.exercises('b'), exC: this.exercises('c'),
+      progA: `${this.count('a')} of 4 done`, progB: `${this.count('b')} of 4 exercises done`, progC: `${nc} of 4 done`,
+      pctB: `${this.count('b') * 25}%`,
+      streakA: ra.streak, streakB: rb.streak, streakC: rc.streak,
+      readLabelA: ra.label, readClsA: ra.cls, toggleReadA: ra.toggle,
+      readLabelB: rb.label, readClsB: rb.cls, toggleReadB: rb.toggle,
+      readLabelC: rc.label, readClsC: rc.cls, toggleReadC: rc.toggle,
+      bTabs: ROMAN.map((n, i) => ({ n, go: () => go(i), color: i === b.page ? 'var(--color-text)' : 'var(--color-neutral-500)', line: i === b.page ? 'var(--color-accent)' : 'transparent' })),
+      bTx: `-${b.page * 25}%`, bPrev: () => go(b.page - 1), bNext: () => go(b.page === 3 ? 0 : b.page + 1),
+      bAtStart: b.page === 0, bFolio: `${ROMAN[b.page]} · ${FOLIO[b.page]}`, bNextLabel: b.page === 3 ? 'Begin again' : 'Next ›',
+      toc, cSummary: left === 0 ? 'All done. Go well today.' : `${left} still to do this morning.`,
+      cBackdrop: c.sheet ? 0.35 : 0, cPE: c.sheet ? 'auto' : 'none', cSheetY: c.sheet ? '0' : '105%',
+      cKicker: c.sheet ? KICKERS[c.sheet] : '', closeSheet: () => this.upd('c', () => ({ sheet: null })),
+      sWx: c.sheet === 'wx', sDay: c.sheet === 'day', sWord: c.sheet === 'word', sBody: c.sheet === 'body'
+    };
+  }
+}
+</script>
+</body>
+</html>

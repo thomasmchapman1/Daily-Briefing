@@ -9,7 +9,7 @@ interface Props {
 export function TrainingSection({ workout, done, onToggle }: Props) {
   const count = workout.exercises.filter((_, i) => done[i]).length
   return (
-    <section className="section" aria-label="Training">
+    <section className="section section--training" aria-label="Training">
       <div className="kicker-row">
         <span className="kicker">Training</span>
         {!workout.rest && (

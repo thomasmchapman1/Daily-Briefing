@@ -71,7 +71,8 @@ button {
   border-bottom: 1px solid var(--color-divider);
 }
 
-.section--scripture {
+.section--scripture,
+.section--training {
   padding: 22px 0;
 }
 
@@ -228,7 +229,7 @@ button {
 
 /* ---------- The Day ---------- */
 .events {
-  margin-top: 4px;
+  margin-top: 8px;
 }
 
 .event {
@@ -296,6 +297,7 @@ button {
   font-weight: 400;
   font-size: 20px;
   line-height: 1.35;
+  text-wrap: pretty;
 }
 
 .scripture-attr {
@@ -310,7 +312,8 @@ button {
   font-family: var(--font-display);
   font-weight: 600;
   font-size: 24px;
-  margin-top: 8px;
+  line-height: 1.15;
+  margin: 8px 0 4px;
 }
 
 .training-meta {

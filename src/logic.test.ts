@@ -37,7 +37,9 @@ describe('scripture', () => {
       ],
     }
     const today = buildToday(284, ['Psalm 23'], [psalm])
-    expect(today.excerpt.startsWith('The LORD is my shepherd')).toBe(true)
+    expect(today.excerpt).toBe(
+      'The LORD is my shepherd; I shall not want. He maketh me to lie down in green pastures: he leadeth me beside the still waters. He restoreth my soul.',
+    )
     expect(today.attribution).toBe('Psalm 23:1–3 · KJV · about 1 min')
   })
 

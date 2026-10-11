@@ -11,7 +11,7 @@ export { allTranslations } from './providers'
 export { loadReadLog, setRead, streak } from './history'
 
 const WORDS_PER_MINUTE = 130
-const EXCERPT_MAX_CHARS = 240
+const EXCERPT_MAX_CHARS = 170
 
 /** Plan day and references for a date. Synchronous, works offline. */
 export function getPlanDay(date: Date, settings: ScriptureSettings): { planDay: number; references: string[] } {
@@ -36,21 +36,37 @@ function verseSpan(p: Passage, count: number): string {
   return `${book} ${first.chapter}:${first.verse}–${last.verse}`
 }
 
-/** Pick the first 2–3 verses, staying short enough for the pull quote. */
-function excerptCount(p: Passage): number {
-  let count = Math.min(3, p.verses.length)
-  const len = (n: number) => p.verses.slice(0, n).reduce((s, v) => s + v.text.length + 1, 0)
-  while (count > 2 && len(count) > EXCERPT_MAX_CHARS) count--
-  if (count === 2 && len(2) > EXCERPT_MAX_CHARS * 1.5) count = 1
-  return Math.max(count, 1)
+/** First clause of a verse, closed with a full stop: "He restoreth my soul." */
+function firstClause(text: string): string {
+  const m = text.match(/^(.+?)[:;,]\s/)
+  return m ? `${m[1]}.` : text
+}
+
+/**
+ * The first 2–3 verses for the pull quote. A verse that would make the quote
+ * too long is cut to its first clause, as in the design ("…He restoreth my soul.").
+ */
+function excerptOf(p: Passage): { text: string; count: number } {
+  const parts: string[] = []
+  let length = 0
+  for (const v of p.verses.slice(0, 3)) {
+    if (parts.length === 0 || length + v.text.length + 1 <= EXCERPT_MAX_CHARS) {
+      parts.push(v.text)
+      length += v.text.length + 1
+      continue
+    }
+    const clause = firstClause(v.text)
+    if (clause !== v.text && length + clause.length + 1 <= EXCERPT_MAX_CHARS + 30) parts.push(clause)
+    break
+  }
+  return { text: parts.join(' '), count: parts.length }
 }
 
 export function buildToday(planDay: number, references: string[], passages: Passage[]): ScriptureToday {
   const words = passages.reduce((s, p) => s + p.verses.reduce((w, v) => w + v.text.split(' ').length, 0), 0)
   const minutes = Math.max(1, Math.round(words / WORDS_PER_MINUTE))
   const first = passages[0]
-  const count = first && first.verses.length ? excerptCount(first) : 0
-  const excerpt = count ? first.verses.slice(0, count).map((v) => v.text).join(' ') : ''
+  const { text: excerpt, count } = first && first.verses.length ? excerptOf(first) : { text: '', count: 0 }
   const attribution = count ? `${verseSpan(first, count)} · ${first.translation} · about ${minutes} min` : ''
   return { planDay, references, excerpt, attribution, minutes, passages }
 }

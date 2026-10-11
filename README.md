@@ -1,6 +1,6 @@
 # The Morning
 
-A personal morning briefing laid out like a newspaper: **Weather**, **The Day** (calendar), **Scripture** and **Training** on one scrolling page. It's an installable PWA for iPhone. The design spec is in [`docs/HANDOFF.md`](docs/HANDOFF.md) (option 1a, "The Morning Paper").
+A personal morning briefing laid out like a newspaper: **Weather**, **The Day** (calendar), **Scripture** and **Training** on one scrolling page. It's an installable PWA for iPhone. The design spec is in [`docs/HANDOFF.md`](docs/HANDOFF.md) (option 1a, "The Morning Paper"). The prototype is in [`docs/design/`](docs/design/).
 
 Built with Vite, React and TypeScript, plain CSS, and `vite-plugin-pwa`. Calendar parsing runs in one small serverless function.
 
@@ -53,7 +53,7 @@ Everything lives in `src/scripture/`:
 
 ## Notes and open items
 
-- The design system's `styles.css` and the HTML prototype weren't part of the handoff, so the `.btn`, `.field` and `.input` classes in `src/styles.css` are rebuilt from the token list in the spec. Swap in the originals if you have them.
+- The HTML prototype is in `docs/design/` (open `Daily Briefing.dc.html`, phone **1a**). It still needs the design system's `_ds/` folder to render, which wasn't part of the handoff. So the `.btn`, `.field` and `.input` classes in `src/styles.css` are rebuilt from the token list in the spec. Swap in the originals from `_ds/…/styles.css` if you have them.
 - The app icon is a placeholder ("M" in Cormorant). Replace `public/apple-touch-icon.png` and `public/icon-*.png`, or edit and re-run `npm run gen:icons` (needs Playwright).
 - Fonts are self-hosted through `@fontsource` (the same Google Fonts files), so they work offline.
 - The masthead's "Vol." counts from 1984 (Vol. XLII in 2026). Change `VOLUME_EPOCH` in `src/components/Masthead.tsx`.
