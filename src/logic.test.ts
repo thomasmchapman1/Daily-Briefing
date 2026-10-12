@@ -6,7 +6,7 @@ import { splitReference } from './scripture/refs'
 import type { Passage } from './scripture/types'
 import { firstHourIndex, toForecast, type OpenMeteo } from './weather/api'
 import { compass } from './weather/summary'
-import { getWorkout } from './workout'
+import { DEFAULT_PROGRAM, getWorkout, normalizeProgram } from './workout'
 
 describe('dates', () => {
   it('numbers the masthead', () => {
@@ -108,6 +108,32 @@ describe('workout', () => {
     expect(w.exercises[0].spec).toBe('4 × 6 · 185 lb')
     expect(getWorkout(new Date(2026, 9, 12), '2026-09-04').rest).toBe(false)
     expect(getWorkout(new Date(2026, 9, 10), '2026-09-04').rest).toBe(true)
+  })
+})
+
+describe('training plan edits', () => {
+  it('cleans an edited plan: blank exercises dropped, 7 days a week, rest days named', () => {
+    const p = normalizeProgram({
+      name: ' Strength ',
+      weeks: [{ days: [{ title: '', minutes: 40.4, exercises: [{ name: ' Squat ', spec: '5 × 5' }, { name: '  ', spec: 'x' }] }, { title: '', minutes: 30, exercises: [] }] }],
+    })
+    expect(p.name).toBe('Strength')
+    expect(p.weeks[0].days).toHaveLength(7)
+    expect(p.weeks[0].days[0]).toEqual({ title: 'Workout', minutes: 40, exercises: [{ name: 'Squat', spec: '5 × 5' }] })
+    expect(p.weeks[0].days[1]).toEqual({ title: 'Rest day', minutes: 0, exercises: [] })
+    expect(p.weeks[0].days[6].title).toBe('Rest day')
+  })
+
+  it('falls back to the bundled plan when nothing usable is stored', () => {
+    expect(normalizeProgram(null)).toBe(DEFAULT_PROGRAM)
+    expect(normalizeProgram({ weeks: [] })).toBe(DEFAULT_PROGRAM)
+  })
+
+  it('follows an edited plan, looping over its weeks', () => {
+    const p = normalizeProgram({ weeks: [{ days: [{ title: 'Run', minutes: 30, exercises: [{ name: 'Easy run', spec: '5 km' }] }] }] })
+    expect(getWorkout(new Date(2026, 9, 12), '2026-10-12', p)).toMatchObject({ week: 1, day: 1, title: 'Run', rest: false })
+    expect(getWorkout(new Date(2026, 9, 19), '2026-10-12', p)).toMatchObject({ week: 1, day: 1, title: 'Run' })
+    expect(getWorkout(new Date(2026, 9, 13), '2026-10-12', p).rest).toBe(true)
   })
 })
 

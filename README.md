@@ -27,6 +27,7 @@ Tap the masthead title (**The Morning Briefing**) to open settings:
 - **City**: shown on the masthead. Weather uses it when device location is off or denied. "Look up" geocodes it with Open-Meteo.
 - **Calendar**: either **Google Calendar** (sign in with Google, then choose which calendars to show; this needs the one-time setup below) or an **iCal link** (a private ICS link from Google or iCloud; `webcal://…` links work too).
 - **Translation**, **personal worship link** (defaults to familyworship.io; empty hides the links), **training programme start**.
+- **Edit training plan**: choose a week, open a day, and change its title, minutes and exercises (add, remove or reorder). You can also add, copy or remove weeks, or reset to the original plan. Edits are saved on this device.
 
 Settings, read history, workout ticks and the last briefing are kept in `localStorage` under the `morning:` prefix.
 
@@ -37,7 +38,7 @@ Settings, read history, workout ticks and the last briefing are kept in `localSt
 | Weather | [Open-Meteo](https://open-meteo.com) (°F, mph, no key). Summary sentence generated in `src/weather/summary.ts`. |
 | The Day | Google Calendar API, read-only: `api/google/*` → `server/google.ts`. Or an ICS link → `POST /api/ics` (`api/ics.ts` → `server/icsEvents.ts`, using `ical.js`). It expands recurring events, exceptions and time zones, and returns only today's events. The private link goes in the request body, not the URL. |
 | Scripture | `src/scripture/`: a verse of the day from `plans/verse-a-day.json`, with text from [bible-api.com](https://bible-api.com) (KJV by default). The reference and the **Personal worship** button open the worship link. |
-| Training | `src/workout/program.json` (`weeks[] → days[] → { title, minutes, exercises[] }`). The current week and day count from the programme start date and loop at the end. A day with no exercises is a rest day. |
+| Training | The plan edited in settings (stored on the device), or else the bundled `src/workout/program.json` (`weeks[] → days[] → { title, minutes, exercises[] }`). The current week and day count from the programme start date and loop at the end. A day with no exercises is a rest day. |
 
 Loading is stale-while-revalidate. The last cached briefing shows instantly, and skeleton rows appear only on the very first load. Each section fails on its own. The app refreshes on pull-down, when it returns to the foreground after 30 minutes, and at local midnight. Read state and exercise ticks are keyed by date, so a new day starts fresh. The service worker precaches the app shell and the self-hosted fonts for offline opening.
 

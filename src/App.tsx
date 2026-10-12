@@ -10,7 +10,7 @@ import { dailyVerseSettings } from './scripture'
 import { ScriptureSection } from './scripture/ScriptureSection'
 import { useSettings } from './settings'
 import { useBriefing, useToday } from './useBriefing'
-import { getWorkout, loadWorkoutLog, toggleExercise } from './workout'
+import { getWorkout, loadProgram, loadWorkoutLog, resetProgram, saveProgram, toggleExercise } from './workout'
 
 export default function App() {
   const [settings, saveSettings] = useSettings()
@@ -33,9 +33,10 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   const [workoutLog, setWorkoutLog] = useState(loadWorkoutLog)
+  const [program, setProgram] = useState(loadProgram)
 
   const date = isoDate(today)
-  const workout = useMemo(() => getWorkout(today, settings.programStart), [today, settings.programStart])
+  const workout = useMemo(() => getWorkout(today, settings.programStart, program), [today, settings.programStart, program])
   const scriptureSettings = useMemo(
     () => dailyVerseSettings(today, settings.translation),
     [today, settings.translation],
@@ -62,6 +63,9 @@ export default function App() {
           settings={settings}
           weatherSource={briefing.weatherSource}
           googleResult={googleResult}
+          program={program}
+          onSaveProgram={(next) => setProgram(saveProgram(next))}
+          onResetProgram={() => setProgram(resetProgram())}
           onSave={saveSettings}
           onClose={() => {
             setSettingsOpen(false)

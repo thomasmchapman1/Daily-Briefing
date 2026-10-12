@@ -2,6 +2,8 @@ import { useId, useState, type ReactNode } from 'react'
 import { allTranslations } from '../scripture'
 import type { Settings } from '../settings'
 import { connectGoogle } from '../calendar/api'
+import { WorkoutEditor } from '../workout/WorkoutEditor'
+import type { Program } from '../workout'
 import { geocodeCity } from '../weather/api'
 import { GoogleCalendarPicker } from './GoogleCalendarPicker'
 import type { WeatherSource } from '../weather/types'
@@ -12,6 +14,9 @@ interface Props {
   weatherSource: WeatherSource | null
   /** Set right after returning from Google sign-in: connected | cancelled | failed. */
   googleResult: string | null
+  program: Program
+  onSaveProgram: (next: Program) => void
+  onResetProgram: () => void
   onSave: (next: Settings) => void
   onClose: () => void
 }
@@ -72,7 +77,8 @@ function WeatherSourceInfo({ source, city }: { source: WeatherSource | null; cit
   )
 }
 
-export function SettingsScreen({ settings, weatherSource, googleResult, onSave, onClose }: Props) {
+export function SettingsScreen({ settings, weatherSource, googleResult, program, onSaveProgram, onResetProgram, onSave, onClose }: Props) {
+  const [editingPlan, setEditingPlan] = useState(false)
   const [draft, setDraft] = useState(settings)
   const [lookup, setLookup] = useState<string | null>(null)
   const set = <K extends keyof Settings>(key: K, value: Settings[K]) => setDraft((d) => ({ ...d, [key]: value }))
@@ -204,7 +210,7 @@ export function SettingsScreen({ settings, weatherSource, googleResult, onSave, 
             />
           )}
         </Field>
-        <Field label="Training programme start" hint="Week 1, Day 1 of the training programme.">
+        <Field label="Training programme start" hint="Week 1, Day 1 of the training plan. Change it to restart the plan.">
           {(id) => (
             <input
               id={id}
@@ -215,12 +221,30 @@ export function SettingsScreen({ settings, weatherSource, googleResult, onSave, 
             />
           )}
         </Field>
+        <div className="field">
+          <label>Training plan</label>
+          <span className="field-hint" style={{ marginTop: 0, marginBottom: 10 }}>
+            {program.name} · {program.weeks.length} {program.weeks.length === 1 ? 'week' : 'weeks'}, repeating
+          </span>
+          <button type="button" className="btn btn-secondary btn-wide" onClick={() => setEditingPlan(true)}>
+            Edit training plan
+          </button>
+        </div>
         <div style={{ paddingTop: 20 }}>
           <button type="submit" className="btn btn-primary btn-wide">
             Save
           </button>
         </div>
       </form>
+      {editingPlan && (
+        <WorkoutEditor
+          program={program}
+          programStart={draft.programStart}
+          onSave={onSaveProgram}
+          onReset={onResetProgram}
+          onClose={() => setEditingPlan(false)}
+        />
+      )}
     </Sheet>
   )
 }

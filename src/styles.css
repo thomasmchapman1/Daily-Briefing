@@ -436,6 +436,66 @@ select.input {
   accent-color: var(--color-accent);
 }
 
+/* ---------- Training plan editor ---------- */
+.editor-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+}
+
+.editor-day {
+  border-bottom: 1px solid var(--color-divider);
+}
+
+.editor-day-head {
+  display: grid;
+  grid-template-columns: 76px 1fr 16px;
+  gap: 10px;
+  align-items: baseline;
+  padding: 12px 0;
+}
+
+.editor-day-num {
+  font-size: 12px;
+  color: var(--color-neutral-700);
+  font-variant-numeric: tabular-nums;
+}
+
+.editor-day-title {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 18px;
+}
+
+.editor-day-body {
+  padding: 0 0 16px;
+}
+
+.editor-label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--color-neutral-700);
+}
+
+.editor-exercise {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 6px 4px;
+  padding: 12px 0 0;
+  margin-top: 12px;
+  border-top: 1px solid var(--color-divider);
+}
+
+.editor-exercise > .input:first-child {
+  grid-column: 1 / -1;
+}
+
+.editor-exercise-tools {
+  display: flex;
+}
+
 /* ---------- Overlay screens (reader, settings) ---------- */
 .sheet {
   position: fixed;
