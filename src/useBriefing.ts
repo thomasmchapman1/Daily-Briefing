@@ -1,7 +1,7 @@
 // Loads the briefing stale-while-revalidate: cached data renders immediately,
 // then each section re-fetches on its own and fails on its own.
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { getTodaysEvents, type CalendarEvent } from './calendar/api'
+import { CalendarAuthError, calendarConfigured, calendarKey, getTodaysEvents, type CalendarEvent } from './calendar/api'
 import { isoDate, msUntilNextMidnight, startOfDay } from './lib/date'
 import { load, save } from './lib/storage'
 import { getToday, scriptureKey, type ScriptureToday } from './scripture'
@@ -16,7 +16,7 @@ export interface SectionState<T> {
 
 interface Cache {
   weather?: { data: Forecast; fetchedAt: number; source?: WeatherSource }
-  events?: { data: CalendarEvent[]; date: string; icsUrl: string; fetchedAt: number }
+  events?: { data: CalendarEvent[]; date: string; calendar: string; fetchedAt: number }
   scripture?: { data: ScriptureToday; key: string }
   fetchedAt?: number
 }
@@ -68,7 +68,7 @@ function fromCache(cache: Cache, settings: Settings, today: Date) {
   const ev = cache.events
   return {
     weather: { data: cache.weather?.data ?? null, error: false },
-    events: { data: ev && ev.date === date && ev.icsUrl === settings.icsUrl ? ev.data : null, error: false },
+    events: { data: ev && ev.date === date && ev.calendar === calendarKey(settings) ? ev.data : null, error: false },
     scripture: {
       data: cache.scripture?.key === scriptureKey(date, settings) ? cache.scripture.data : null,
       error: false,
@@ -84,6 +84,7 @@ export function useBriefing(settings: Settings, today: Date) {
     () => fromCache(cacheRef.current, settings, today).scripture,
   )
   const [weatherSource, setWeatherSource] = useState<WeatherSource | null>(cacheRef.current.weather?.source ?? null)
+  const [calendarNeedsAuth, setCalendarNeedsAuth] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
   const generation = useRef(0)
 
@@ -113,14 +114,19 @@ export function useBriefing(settings: Settings, today: Date) {
     })()
 
     const eventsJob = (async () => {
-      if (!settings.icsUrl) return
+      if (!calendarConfigured(settings)) return
       try {
-        const data = await getTodaysEvents(settings.icsUrl, today)
+        const data = await getTodaysEvents(settings, today)
         if (!current()) return
-        persist({ events: { data, date, icsUrl: settings.icsUrl, fetchedAt: Date.now() } })
+        persist({ events: { data, date, calendar: calendarKey(settings), fetchedAt: Date.now() } })
         setEvents({ data, error: false })
-      } catch {
-        if (current()) setEvents((s) => ({ data: s.data, error: s.data == null }))
+        setCalendarNeedsAuth(false)
+      } catch (err) {
+        if (!current()) return
+        if (err instanceof CalendarAuthError) {
+          setCalendarNeedsAuth(true)
+          setEvents({ data: null, error: false })
+        } else setEvents((s) => ({ data: s.data, error: s.data == null }))
       }
     })()
 
@@ -167,5 +173,5 @@ export function useBriefing(settings: Settings, today: Date) {
     return () => document.removeEventListener('visibilitychange', onVisible)
   }, [refresh])
 
-  return { weather, weatherSource, events, scripture, refreshing, refresh, calendarLinked: Boolean(settings.icsUrl) }
+  return { weather, weatherSource, events, scripture, refreshing, refresh, calendarLinked: calendarConfigured(settings), calendarNeedsAuth }
 }

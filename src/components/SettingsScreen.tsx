@@ -1,13 +1,17 @@
 import { useId, useState, type ReactNode } from 'react'
 import { PLANS, allTranslations } from '../scripture'
 import type { Settings } from '../settings'
+import { connectGoogle } from '../calendar/api'
 import { geocodeCity } from '../weather/api'
+import { GoogleCalendarPicker } from './GoogleCalendarPicker'
 import type { WeatherSource } from '../weather/types'
 import { Sheet } from './Sheet'
 
 interface Props {
   settings: Settings
   weatherSource: WeatherSource | null
+  /** Set right after returning from Google sign-in: connected | cancelled | failed. */
+  googleResult: string | null
   onSave: (next: Settings) => void
   onClose: () => void
 }
@@ -68,7 +72,7 @@ function WeatherSourceInfo({ source, city }: { source: WeatherSource | null; cit
   )
 }
 
-export function SettingsScreen({ settings, weatherSource, onSave, onClose }: Props) {
+export function SettingsScreen({ settings, weatherSource, googleResult, onSave, onClose }: Props) {
   const [draft, setDraft] = useState(settings)
   const [lookup, setLookup] = useState<string | null>(null)
   const set = <K extends keyof Settings>(key: K, value: Settings[K]) => setDraft((d) => ({ ...d, [key]: value }))
@@ -118,25 +122,61 @@ export function SettingsScreen({ settings, weatherSource, onSave, onClose }: Pro
           <label>Last forecast came from</label>
           <WeatherSourceInfo source={weatherSource} city={settings.city} />
         </div>
-        <Field
-          label="Calendar link (iCal)"
-          hint="Google Calendar: Settings → your calendar → Secret address in iCal format. iCloud: share the calendar publicly and copy the link."
-        >
-          {(id) => (
-            <input
-              id={id}
-              className="input"
-              type="url"
-              inputMode="url"
-              placeholder="https://calendar.google.com/calendar/ical/…/basic.ics"
-              value={draft.icsUrl}
-              onChange={(e) => set('icsUrl', e.target.value.trim())}
-              autoCapitalize="off"
-              autoCorrect="off"
-              spellCheck={false}
+        <div className="field">
+          <label>Calendar</label>
+          <div className="seg" role="radiogroup" aria-label="Calendar source" style={{ alignSelf: 'flex-start' }}>
+            {(
+              [
+                ['google', 'Google Calendar'],
+                ['ics', 'iCal link'],
+              ] as const
+            ).map(([value, text]) => (
+              <label key={value} className="seg-opt">
+                <input
+                  type="radio"
+                  name="calendar-source"
+                  checked={draft.calendarSource === value}
+                  onChange={() => set('calendarSource', value)}
+                />
+                {text}
+              </label>
+            ))}
+          </div>
+        </div>
+        {draft.calendarSource === 'google' ? (
+          <div className="field" style={{ display: 'flex', flexDirection: 'column' }}>
+            <label>Google Calendar</label>
+            <GoogleCalendarPicker
+              selected={draft.googleCalendars}
+              onChange={(ids) => set('googleCalendars', ids)}
+              result={googleResult}
+              onConnect={() => {
+                onSave({ ...draft, calendarSource: 'google' })
+                connectGoogle()
+              }}
             />
-          )}
-        </Field>
+          </div>
+        ) : (
+          <Field
+            label="Calendar link (iCal)"
+            hint="Google Calendar: Settings → your calendar → Secret address in iCal format. iCloud: share the calendar publicly and copy the link."
+          >
+            {(id) => (
+              <input
+                id={id}
+                className="input"
+                type="url"
+                inputMode="url"
+                placeholder="https://calendar.google.com/calendar/ical/…/basic.ics"
+                value={draft.icsUrl}
+                onChange={(e) => set('icsUrl', e.target.value.trim())}
+                autoCapitalize="off"
+                autoCorrect="off"
+                spellCheck={false}
+              />
+            )}
+          </Field>
+        )}
         <Field label="Reading plan">
           {(id) => (
             <select id={id} className="input" value={draft.plan} onChange={(e) => set('plan', e.target.value)}>

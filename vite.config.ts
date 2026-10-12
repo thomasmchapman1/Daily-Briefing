@@ -1,11 +1,14 @@
 import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
+import { handleGoogle } from './server/google.ts'
 import { IcsError, handleIcsRequest } from './server/icsEvents.ts'
 
-// Serves /api/ics during `vite dev` / `vite preview`, mirroring api/ics.ts on Vercel.
-function icsApi(): Plugin {
+// Serves /api/* during `vite dev` / `vite preview`, mirroring the Vercel functions in api/.
+function localApi(): Plugin {
   const middleware = (req: any, res: any, next: () => void) => {
+    const google = req.url?.match(/^\/api\/google\/([a-z]+)/)
+    if (google) return void handleGoogle(google[1], req, res)
     if (!req.url?.startsWith('/api/ics')) return next()
     const send = (status: number, body: unknown) => {
       res.statusCode = status
@@ -26,7 +29,7 @@ function icsApi(): Plugin {
     })
   }
   return {
-    name: 'ics-api',
+    name: 'local-api',
     configureServer: (server) => void server.middlewares.use(middleware),
     configurePreviewServer: (server) => void server.middlewares.use(middleware),
   }
@@ -35,13 +38,13 @@ function icsApi(): Plugin {
 export default defineConfig({
   plugins: [
     react(),
-    icsApi(),
+    localApi(),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['apple-touch-icon.png', 'favicon.svg'],
       manifest: {
-        name: 'The Morning',
-        short_name: 'The Morning',
+        name: 'The Morning Briefing',
+        short_name: 'The Morning Briefing',
         description: 'A personal morning briefing.',
         display: 'standalone',
         start_url: '/',

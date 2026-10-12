@@ -66,7 +66,7 @@ export async function fetchIcs(url: string): Promise<string> {
   return text
 }
 
-function clean(s: unknown, max = 400): string | undefined {
+export function clean(s: unknown, max = 400): string | undefined {
   if (typeof s !== 'string') return undefined
   const t = s.replace(/\r/g, '').trim()
   if (!t) return undefined
@@ -150,7 +150,12 @@ export function eventsInRange(ics: string, req: Pick<IcsRequest, 'start' | 'end'
     }
   }
 
-  return out.sort((a, b) => {
+  return sortEvents(out)
+}
+
+/** All-day events first, then by start time. */
+export function sortEvents(events: CalendarEvent[]): CalendarEvent[] {
+  return events.sort((a, b) => {
     if (a.allDay !== b.allDay) return a.allDay ? -1 : 1
     return (a.start ?? '').localeCompare(b.start ?? '') || a.title.localeCompare(b.title)
   })

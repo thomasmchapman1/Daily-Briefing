@@ -7,6 +7,10 @@ export interface Settings {
   lon: number
   /** Use the browser's location for weather, falling back to lat/lon above. */
   useDeviceLocation: boolean
+  /** Where The Day comes from: Google Calendar (signed in) or a pasted iCal link. */
+  calendarSource: 'google' | 'ics'
+  /** Google calendar ids to show; empty means the primary calendar. */
+  googleCalendars: string[]
   icsUrl: string
   /** Reading plan id: src/scripture/plans/<id>.json */
   plan: string
@@ -20,6 +24,8 @@ export const DEFAULT_SETTINGS: Settings = {
   lat: 40.6782,
   lon: -73.9442,
   useDeviceLocation: true,
+  calendarSource: 'google',
+  googleCalendars: [],
   icsUrl: '',
   plan: 'default-365',
   planStart: `${new Date().getFullYear()}-01-01`,

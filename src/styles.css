@@ -106,7 +106,9 @@ button {
   text-align: center;
   font-family: var(--font-heading);
   font-weight: 400;
-  font-size: 44px;
+  /* "The Morning Briefing" is ~8.5em wide: scale it to fit the column (38px at 390pt), up to 44px. */
+  font-size: min(44px, calc((min(100vw, 480px) - 2 * var(--gutter)) / 8.8));
+  white-space: nowrap;
   line-height: 1;
   margin: 6px 0 4px;
 }

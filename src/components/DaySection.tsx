@@ -8,13 +8,22 @@ function plural(n: number, word: string) {
   return `${n} ${word}${n === 1 ? '' : 's'}`
 }
 
-export function DaySection({ state, linked }: { state: SectionState<CalendarEvent[]>; linked: boolean }) {
+interface Props {
+  state: SectionState<CalendarEvent[]>
+  linked: boolean
+  /** Google Calendar is selected but not (or no longer) connected. */
+  needsAuth: boolean
+}
+
+export function DaySection({ state, linked, needsAuth }: Props) {
   const [openEventIndex, setOpenEventIndex] = useState<number | null>(null)
   const events = state.data
 
   let body
   if (!linked) {
     body = <p className="empty-note">No calendar linked. Tap the title above to add one.</p>
+  } else if (needsAuth) {
+    body = <p className="empty-note">Google Calendar isn’t connected. Tap the title above to connect it.</p>
   } else if (events) {
     body = events.length ? (
       <div className="events">
@@ -57,7 +66,7 @@ export function DaySection({ state, linked }: { state: SectionState<CalendarEven
 
   return (
     <section className="section" aria-label="The Day">
-      <Kicker label="The Day" meta={linked && events ? plural(events.length, 'engagement') : undefined} />
+      <Kicker label="The Day" meta={linked && !needsAuth && events ? plural(events.length, 'engagement') : undefined} />
       {body}
     </section>
   )

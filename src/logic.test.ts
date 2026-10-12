@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { issueLabel } from './components/Masthead'
 import { dayOfYear, toRoman, clockTime } from './lib/date'
 import { buildToday, getPlanDay, streak } from './scripture'
 import type { Passage } from './scripture/types'
@@ -12,6 +13,16 @@ describe('dates', () => {
     expect(toRoman(2026 - 1984)).toBe('XLII')
     expect(clockTime(new Date(2026, 9, 11, 16, 0))).toBe('4:00')
     expect(clockTime(new Date(2026, 9, 11, 0, 5))).toBe('12:05')
+  })
+})
+
+describe('masthead issue numbers', () => {
+  it('starts at Vol. I, No. 1 on 12 October 2026', () => {
+    expect(issueLabel(new Date(2026, 9, 11))).toBe('Vol. I · Preview')
+    expect(issueLabel(new Date(2026, 9, 12))).toBe('Vol. I · No. 1')
+    expect(issueLabel(new Date(2026, 9, 13))).toBe('Vol. I · No. 2')
+    expect(issueLabel(new Date(2027, 9, 11))).toBe('Vol. I · No. 365')
+    expect(issueLabel(new Date(2027, 9, 12))).toBe('Vol. II · No. 366')
   })
 })
 
