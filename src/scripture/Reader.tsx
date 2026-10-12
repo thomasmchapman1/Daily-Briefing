@@ -1,4 +1,5 @@
 import { Sheet } from '../components/Sheet'
+import { displayReference } from './refs'
 import type { Passage } from './types'
 
 interface Props {
@@ -17,7 +18,7 @@ export function Reader({ references, passages, onClose }: Props) {
           const multiChapter = p.verses.some((v) => v.chapter !== p.verses[0]?.chapter)
           return (
             <article key={p.reference}>
-              <h2 className="reader-heading">{p.reference}</h2>
+              <h2 className="reader-heading">{displayReference(p.reference)}</h2>
               <p className="reader-text">
                 {p.verses.map((v, i) => {
                   const newChapter = multiChapter && (i === 0 || p.verses[i - 1].chapter !== v.chapter)

@@ -26,7 +26,7 @@ Tap the masthead title (**The Morning Briefing**) to open settings:
 
 - **City**: shown on the masthead. Weather uses it when device location is off or denied. "Look up" geocodes it with Open-Meteo.
 - **Calendar**: either **Google Calendar** (sign in with Google, then choose which calendars to show; this needs the one-time setup below) or an **iCal link** (a private ICS link from Google or iCloud; `webcal://…` links work too).
-- **Reading plan**, **plan start date**, **translation**, **training programme start**.
+- **Reading plan** (Verse a day, or M'Cheyne's whole Bible in a year), **plan start date**, **translation**, **personal worship link** (a button under the verse; defaults to familyworship.io), **training programme start**.
 
 Settings, read history, workout ticks and the last briefing are kept in `localStorage` under the `morning:` prefix.
 
@@ -63,7 +63,8 @@ Everything lives in `src/scripture/`:
 
 - `index.ts`: `getToday(date, settings) → { planDay, references, excerpt, attribution, minutes, passages }`, plus `getPlanDay` (synchronous, works offline).
 - `plans/<id>.json`: `{ id, name, leapDay?, days: { "1": ["Genesis 1", "Matthew 1", …], … } }`. Any JSON file dropped in `plans/` appears in settings. A reference can span chapters (`Psalms 52–54`) or join pieces with `;` (`Exodus 11; Exodus 12:1–21`); `refs.ts` splits them for the text provider. Set `"leapDay": "repeat"` for a calendar plan where day 1 is 1 January, so 29 February repeats 28 February.
-- The shipped plan is **M'Cheyne's Calendar for Daily Readings** (`plans/mcheyne.json`): four chapters a day, covering the Old Testament once and the New Testament and Psalms twice, starting 1 January. `mcheyne.test.ts` checks that coverage. The data came from [cwarloe/daily-bible-reading](https://github.com/cwarloe/daily-bible-reading) and was checked against the standard chapter counts.
+- The default plan is **Verse a day** (`plans/verse-a-day.json`, `"kind": "verse"`): one well-known verse a day, shown in full, with Genesis 1:1 on 1 January, Luke 2:11 on Christmas Day and Revelation 22:20 on 31 December. Edit the list in `scripts/gen-verse-plan.mjs`, then run `node scripts/gen-verse-plan.mjs`.
+- Also included is **M'Cheyne's Calendar for Daily Readings** (`plans/mcheyne.json`): four chapters a day, covering the Old Testament once and the New Testament and Psalms twice, starting 1 January. `mcheyne.test.ts` checks that coverage. The data came from [cwarloe/daily-bible-reading](https://github.com/cwarloe/daily-bible-reading) and was checked against the standard chapter counts.
 - `providers/`: implement `TextProvider.fetchPassage(ref, translation)` (for example for api.esv.org or API.Bible) and add it to `PROVIDERS` in `providers/index.ts`. Its translations then show up in settings.
 - `history.ts`: the read log and streak, stored apart from the plan, so changing plan or translation keeps your streak.
 - `ScriptureSection.tsx` / `Reader.tsx`: the layout. Tap the passage reference to open the full-text reader.

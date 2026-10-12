@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { issueLabel } from './components/Masthead'
 import { dayOfYear, toRoman, clockTime } from './lib/date'
-import { buildToday, getPlanDay, streak } from './scripture'
+import { buildToday, displayReference, getPlanDay, streak } from './scripture'
+import { loadSettings } from './settings'
 import { splitReference } from './scripture/refs'
 import type { Passage } from './scripture/types'
 import { firstHourIndex, toForecast, type OpenMeteo } from './weather/api'
@@ -45,6 +46,44 @@ describe('scripture', () => {
     expect(day(2028, 11, 31)).toBe(365)
     expect(day(2029, 0, 1)).toBe(1)
     expect(day(2027, 0, 1)).toBe(1)
+  })
+
+  it('shows a verse of the day in full', () => {
+    const passage: Passage = {
+      reference: 'Romans 8:38–39',
+      book: 'Romans',
+      translation: 'KJV',
+      verses: [
+        { chapter: 8, verse: 38, text: 'For I am persuaded, that neither death, nor life, nor angels, nor principalities, nor powers, nor things present, nor things to come,' },
+        { chapter: 8, verse: 39, text: 'Nor height, nor depth, nor any other creature, shall be able to separate us from the love of God, which is in Christ Jesus our Lord.' },
+      ],
+    }
+    const today = buildToday(1, ['Romans 8:38–39'], [passage], 'verse')
+    expect(today.excerpt.endsWith('Christ Jesus our Lord.')).toBe(true)
+    expect(today.attribution).toBe('Romans 8:38–39 · KJV')
+    expect(getPlanDay(new Date(2026, 0, 1), { plan: 'verse-a-day', planStart: '2026-01-01', translation: 'kjv' })).toMatchObject({
+      kind: 'verse',
+      references: ['Genesis 1:1'],
+    })
+  })
+
+  it('names a single psalm "Psalm"', () => {
+    expect(displayReference('Psalms 23:1')).toBe('Psalm 23:1')
+    expect(displayReference('Psalms 121:1–2')).toBe('Psalm 121:1–2')
+    expect(displayReference('Psalms 99–101')).toBe('Psalms 99–101')
+    expect(displayReference('John 3:16')).toBe('John 3:16')
+  })
+
+  it('moves saved settings from before v2 to the verse a day, keeping the rest', () => {
+    const store = new Map<string, string>()
+    globalThis.localStorage = {
+      getItem: (k: string) => store.get(k) ?? null,
+      setItem: (k: string, v: string) => void store.set(k, v),
+    } as Storage
+    store.set('morning:settings', JSON.stringify({ plan: 'mcheyne', city: 'Nashville' }))
+    expect(loadSettings()).toMatchObject({ plan: 'verse-a-day', city: 'Nashville', worshipUrl: 'https://www.familyworship.io/dashboard' })
+    store.set('morning:settings', JSON.stringify({ plan: 'mcheyne', version: 2 }))
+    expect(loadSettings().plan).toBe('mcheyne')
   })
 
   it('splits references into fetchable pieces', () => {

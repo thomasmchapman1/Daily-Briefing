@@ -14,3 +14,8 @@ export function splitReference(ref: string): string[] {
   }
   return out
 }
+
+/** How a reference reads on the page: a single psalm is "Psalm", several are "Psalms". */
+export function displayReference(ref: string): string {
+  return /^Psalms \d+(:[\d–-]+)?$/.test(ref) ? ref.replace(/^Psalms/, 'Psalm') : ref
+}

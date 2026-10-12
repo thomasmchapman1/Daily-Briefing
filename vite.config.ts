@@ -44,7 +44,7 @@ export default defineConfig({
       includeAssets: ['apple-touch-icon.png', 'favicon.svg'],
       manifest: {
         name: 'The Morning Briefing',
-        short_name: 'The Morning Briefing',
+        short_name: 'The Morning',
         description: 'A personal morning briefing.',
         display: 'standalone',
         start_url: '/',

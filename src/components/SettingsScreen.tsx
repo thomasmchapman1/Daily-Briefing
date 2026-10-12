@@ -204,6 +204,22 @@ export function SettingsScreen({ settings, weatherSource, googleResult, onSave, 
             </select>
           )}
         </Field>
+        <Field label="Personal worship link" hint="Opens from the Scripture section. Leave empty to hide the button.">
+          {(id) => (
+            <input
+              id={id}
+              className="input"
+              type="url"
+              inputMode="url"
+              placeholder="https://www.familyworship.io/dashboard"
+              value={draft.worshipUrl}
+              onChange={(e) => set('worshipUrl', e.target.value.trim())}
+              autoCapitalize="off"
+              autoCorrect="off"
+              spellCheck={false}
+            />
+          )}
+        </Field>
         <Field label="Training programme start" hint="Week 1, Day 1 of the training programme.">
           {(id) => (
             <input

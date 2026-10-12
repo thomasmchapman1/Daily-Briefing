@@ -47,7 +47,7 @@ export default function App() {
         <Masthead today={today} city={settings.city} onOpenSettings={() => setSettingsOpen(true)} />
         <WeatherSection state={briefing.weather} />
         <DaySection key={date} state={briefing.events} linked={briefing.calendarLinked} needsAuth={briefing.calendarNeedsAuth} />
-        <ScriptureSection today={today} settings={scriptureSettings} state={briefing.scripture} />
+        <ScriptureSection today={today} settings={scriptureSettings} state={briefing.scripture} worshipUrl={settings.worshipUrl} />
         <TrainingSection
           key={`${date}|${settings.programStart}`}
           workout={workout}
