@@ -1,8 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { issueLabel } from './components/Masthead'
 import { dayOfYear, toRoman, clockTime } from './lib/date'
-import { buildToday, displayReference, getPlanDay, streak } from './scripture'
-import { loadSettings } from './settings'
+import { buildToday, dailyVerseSettings, displayReference, getPlanDay, streak } from './scripture'
 import { splitReference } from './scripture/refs'
 import type { Passage } from './scripture/types'
 import { firstHourIndex, toForecast, type OpenMeteo } from './weather/api'
@@ -29,23 +28,19 @@ describe('masthead issue numbers', () => {
 })
 
 describe('scripture', () => {
-  const settings = { plan: 'mcheyne', planStart: '2026-01-01', translation: 'kjv' }
+  const verse = (y: number, m: number, d: number) => getPlanDay(new Date(y, m, d), dailyVerseSettings(new Date(y, m, d), 'kjv'))
 
-  it('maps a date to a plan day', () => {
-    expect(getPlanDay(new Date(2026, 9, 11), settings).planDay).toBe(284)
-    expect(getPlanDay(new Date(2027, 0, 1), settings).planDay).toBe(1)
-    expect(getPlanDay(new Date(2026, 0, 1), settings).references).toEqual(['Genesis 1', 'Matthew 1', 'Ezra 1', 'Acts 1'])
-    expect(getPlanDay(new Date(2026, 11, 31), settings).references).toEqual(['2 Chronicles 36', 'Revelation 22', 'Malachi 4', 'John 21'])
+  it('picks the verse by calendar date, every year', () => {
+    expect(verse(2026, 0, 1).references).toEqual(['Genesis 1:1'])
+    expect(verse(2026, 11, 25).references).toEqual(['Luke 2:11'])
+    expect(verse(2027, 11, 31).references).toEqual(['Revelation 22:20'])
+    expect(verse(2028, 11, 25).references).toEqual(['Luke 2:11'])
+    expect(verse(2026, 9, 12).planDay).toBe(285)
   })
 
-  it('repeats 28 February on leap days and still ends on 31 December', () => {
-    const day = (y: number, m: number, d: number) => getPlanDay(new Date(y, m, d), settings).planDay
-    expect(day(2028, 1, 28)).toBe(59)
-    expect(day(2028, 1, 29)).toBe(59)
-    expect(day(2028, 2, 1)).toBe(60)
-    expect(day(2028, 11, 31)).toBe(365)
-    expect(day(2029, 0, 1)).toBe(1)
-    expect(day(2027, 0, 1)).toBe(1)
+  it('repeats 28 February on 29 February', () => {
+    expect(verse(2028, 1, 29).references).toEqual(verse(2028, 1, 28).references)
+    expect(verse(2028, 2, 1).references).toEqual(verse(2026, 2, 1).references)
   })
 
   it('shows a verse of the day in full', () => {
@@ -61,10 +56,7 @@ describe('scripture', () => {
     const today = buildToday(1, ['Romans 8:38–39'], [passage], 'verse')
     expect(today.excerpt.endsWith('Christ Jesus our Lord.')).toBe(true)
     expect(today.attribution).toBe('Romans 8:38–39 · KJV')
-    expect(getPlanDay(new Date(2026, 0, 1), { plan: 'verse-a-day', planStart: '2026-01-01', translation: 'kjv' })).toMatchObject({
-      kind: 'verse',
-      references: ['Genesis 1:1'],
-    })
+    expect(verse(2026, 0, 1).kind).toBe('verse')
   })
 
   it('names a single psalm "Psalm"', () => {
@@ -72,18 +64,6 @@ describe('scripture', () => {
     expect(displayReference('Psalms 121:1–2')).toBe('Psalm 121:1–2')
     expect(displayReference('Psalms 99–101')).toBe('Psalms 99–101')
     expect(displayReference('John 3:16')).toBe('John 3:16')
-  })
-
-  it('moves saved settings from before v2 to the verse a day, keeping the rest', () => {
-    const store = new Map<string, string>()
-    globalThis.localStorage = {
-      getItem: (k: string) => store.get(k) ?? null,
-      setItem: (k: string, v: string) => void store.set(k, v),
-    } as Storage
-    store.set('morning:settings', JSON.stringify({ plan: 'mcheyne', city: 'Nashville' }))
-    expect(loadSettings()).toMatchObject({ plan: 'verse-a-day', city: 'Nashville', worshipUrl: 'https://www.familyworship.io/dashboard' })
-    store.set('morning:settings', JSON.stringify({ plan: 'mcheyne', version: 2 }))
-    expect(loadSettings().plan).toBe('mcheyne')
   })
 
   it('splits references into fetchable pieces', () => {

@@ -1,7 +1,7 @@
 // Scripture module. The rest of the app only uses this file's exports and
 // ScriptureSection; plan, translation and text source are all swappable.
 import { addDays, daysBetween, fromIsoDate } from '../lib/date'
-import { getPlan } from './plans'
+import { DEFAULT_PLAN, getPlan } from './plans'
 import { fetchPassage } from './providers'
 import { splitReference } from './refs'
 import type { Passage, ScriptureSettings, ScriptureToday } from './types'
@@ -14,6 +14,11 @@ export { displayReference } from './refs'
 
 const WORDS_PER_MINUTE = 130
 const EXCERPT_MAX_CHARS = 170
+
+/** Settings for the verse of the day, which follows the calendar (day 1 = 1 January). */
+export function dailyVerseSettings(date: Date, translation: string): ScriptureSettings {
+  return { plan: DEFAULT_PLAN, planStart: `${date.getFullYear()}-01-01`, translation }
+}
 
 /** Plan day and references for a date. Synchronous, works offline. */
 export function getPlanDay(

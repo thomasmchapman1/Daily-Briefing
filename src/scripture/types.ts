@@ -50,7 +50,7 @@ export interface ScriptureToday {
   /** e.g. "Psalm 23:1–3 · KJV · about 6 min", or "John 3:16 · KJV" for a verse */
   attribution: string
   minutes: number
-  /** Full text of every reference, for the reader view. */
+  /** Full text of every reference. */
   passages: Passage[]
 }
 

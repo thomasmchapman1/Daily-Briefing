@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { CalendarAuthError, calendarConfigured, calendarKey, getTodaysEvents, type CalendarEvent } from './calendar/api'
 import { isoDate, msUntilNextMidnight, startOfDay } from './lib/date'
 import { load, save } from './lib/storage'
-import { getToday, scriptureKey, type ScriptureToday } from './scripture'
+import { dailyVerseSettings, getToday, scriptureKey, type ScriptureToday } from './scripture'
 import type { Settings } from './settings'
 import { getForecast } from './weather/api'
 import type { Forecast, WeatherSource } from './weather/types'
@@ -70,7 +70,7 @@ function fromCache(cache: Cache, settings: Settings, today: Date) {
     weather: { data: cache.weather?.data ?? null, error: false },
     events: { data: ev && ev.date === date && ev.calendar === calendarKey(settings) ? ev.data : null, error: false },
     scripture: {
-      data: cache.scripture?.key === scriptureKey(date, settings) ? cache.scripture.data : null,
+      data: cache.scripture?.key === scriptureKey(date, dailyVerseSettings(today, settings.translation)) ? cache.scripture.data : null,
       error: false,
     },
   }
@@ -131,10 +131,10 @@ export function useBriefing(settings: Settings, today: Date) {
     })()
 
     const scriptureJob = (async () => {
-      const key = scriptureKey(date, settings)
+      const key = scriptureKey(date, dailyVerseSettings(today, settings.translation))
       if (cacheRef.current.scripture?.key === key) return // Same reading all day.
       try {
-        const data = await getToday(today, settings)
+        const data = await getToday(today, dailyVerseSettings(today, settings.translation))
         if (!current()) return
         persist({ scripture: { data, key } })
         setScripture({ data, error: false })

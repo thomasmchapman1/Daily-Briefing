@@ -26,7 +26,7 @@ Tap the masthead title (**The Morning Briefing**) to open settings:
 
 - **City**: shown on the masthead. Weather uses it when device location is off or denied. "Look up" geocodes it with Open-Meteo.
 - **Calendar**: either **Google Calendar** (sign in with Google, then choose which calendars to show; this needs the one-time setup below) or an **iCal link** (a private ICS link from Google or iCloud; `webcal://…` links work too).
-- **Reading plan** (Verse a day, or M'Cheyne's whole Bible in a year), **plan start date**, **translation**, **personal worship link** (a button under the verse; defaults to familyworship.io), **training programme start**.
+- **Translation**, **personal worship link** (defaults to familyworship.io; empty hides the links), **training programme start**.
 
 Settings, read history, workout ticks and the last briefing are kept in `localStorage` under the `morning:` prefix.
 
@@ -36,7 +36,7 @@ Settings, read history, workout ticks and the last briefing are kept in `localSt
 | --- | --- |
 | Weather | [Open-Meteo](https://open-meteo.com) (°F, mph, no key). Summary sentence generated in `src/weather/summary.ts`. |
 | The Day | Google Calendar API, read-only: `api/google/*` → `server/google.ts`. Or an ICS link → `POST /api/ics` (`api/ics.ts` → `server/icsEvents.ts`, using `ical.js`). It expands recurring events, exceptions and time zones, and returns only today's events. The private link goes in the request body, not the URL. |
-| Scripture | `src/scripture/`: a reading plan JSON plus a text provider ([bible-api.com](https://bible-api.com), KJV by default). |
+| Scripture | `src/scripture/`: a verse of the day from `plans/verse-a-day.json`, with text from [bible-api.com](https://bible-api.com) (KJV by default). The reference and the **Personal worship** button open the worship link. |
 | Training | `src/workout/program.json` (`weeks[] → days[] → { title, minutes, exercises[] }`). The current week and day count from the programme start date and loop at the end. A day with no exercises is a rest day. |
 
 Loading is stale-while-revalidate. The last cached briefing shows instantly, and skeleton rows appear only on the very first load. Each section fails on its own. The app refreshes on pull-down, when it returns to the foreground after 30 minutes, and at local midnight. Read state and exercise ticks are keyed by date, so a new day starts fresh. The service worker precaches the app shell and the self-hosted fonts for offline opening.
@@ -57,17 +57,15 @@ The app signs in with Google itself, so it needs an OAuth client of its own:
 
 How it works: after sign-in, Google's refresh token is encrypted with `SESSION_SECRET` and stored in an HttpOnly cookie that only `/api/google/*` receives. There's no database. Each refresh trades the token for a short-lived access token and reads today's events from the chosen calendars, skipping cancelled and declined ones. **Disconnect Google** in settings revokes the token.
 
-## Customising the Bible reading
+## Scripture: verse of the day and personal worship
 
-Everything lives in `src/scripture/`:
+The Scripture section shows one verse a day and sends you to your worship site (familyworship.io by default) for personal worship. Tapping the verse reference or **Personal worship** opens the link. **Mark worship done** keeps the streak. Everything lives in `src/scripture/`:
 
-- `index.ts`: `getToday(date, settings) → { planDay, references, excerpt, attribution, minutes, passages }`, plus `getPlanDay` (synchronous, works offline).
-- `plans/<id>.json`: `{ id, name, leapDay?, days: { "1": ["Genesis 1", "Matthew 1", …], … } }`. Any JSON file dropped in `plans/` appears in settings. A reference can span chapters (`Psalms 52–54`) or join pieces with `;` (`Exodus 11; Exodus 12:1–21`); `refs.ts` splits them for the text provider. Set `"leapDay": "repeat"` for a calendar plan where day 1 is 1 January, so 29 February repeats 28 February.
-- The default plan is **Verse a day** (`plans/verse-a-day.json`, `"kind": "verse"`): one well-known verse a day, shown in full, with Genesis 1:1 on 1 January, Luke 2:11 on Christmas Day and Revelation 22:20 on 31 December. Edit the list in `scripts/gen-verse-plan.mjs`, then run `node scripts/gen-verse-plan.mjs`.
-- Also included is **M'Cheyne's Calendar for Daily Readings** (`plans/mcheyne.json`): four chapters a day, covering the Old Testament once and the New Testament and Psalms twice, starting 1 January. `mcheyne.test.ts` checks that coverage. The data came from [cwarloe/daily-bible-reading](https://github.com/cwarloe/daily-bible-reading) and was checked against the standard chapter counts.
+- `plans/verse-a-day.json`: 365 well-known verses, one per calendar day, with no repeats. Genesis 1:1 falls on 1 January, Luke 2:11 on Christmas Day and Revelation 22:20 on 31 December; 29 February repeats 28 February. To change the list, edit `scripts/gen-verse-plan.mjs` and run `node scripts/gen-verse-plan.mjs`.
+- `index.ts`: `getToday(date, settings)` and `dailyVerseSettings(date, translation)`. The module still accepts other plan files in `plans/`, so a reading plan can return later.
 - `providers/`: implement `TextProvider.fetchPassage(ref, translation)` (for example for api.esv.org or API.Bible) and add it to `PROVIDERS` in `providers/index.ts`. Its translations then show up in settings.
-- `history.ts`: the read log and streak, stored apart from the plan, so changing plan or translation keeps your streak.
-- `ScriptureSection.tsx` / `Reader.tsx`: the layout. Tap the passage reference to open the full-text reader.
+- `history.ts`: the done log and streak.
+- `ScriptureSection.tsx`: the layout.
 
 ## Notes and open items
 

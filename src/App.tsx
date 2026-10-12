@@ -6,6 +6,7 @@ import { SettingsScreen } from './components/SettingsScreen'
 import { TrainingSection } from './components/TrainingSection'
 import { WeatherSection } from './components/WeatherSection'
 import { isoDate } from './lib/date'
+import { dailyVerseSettings } from './scripture'
 import { ScriptureSection } from './scripture/ScriptureSection'
 import { useSettings } from './settings'
 import { useBriefing, useToday } from './useBriefing'
@@ -36,8 +37,8 @@ export default function App() {
   const date = isoDate(today)
   const workout = useMemo(() => getWorkout(today, settings.programStart), [today, settings.programStart])
   const scriptureSettings = useMemo(
-    () => ({ plan: settings.plan, planStart: settings.planStart, translation: settings.translation }),
-    [settings.plan, settings.planStart, settings.translation],
+    () => dailyVerseSettings(today, settings.translation),
+    [today, settings.translation],
   )
 
   return (

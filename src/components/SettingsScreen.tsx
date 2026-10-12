@@ -1,5 +1,5 @@
 import { useId, useState, type ReactNode } from 'react'
-import { PLANS, allTranslations } from '../scripture'
+import { allTranslations } from '../scripture'
 import type { Settings } from '../settings'
 import { connectGoogle } from '../calendar/api'
 import { geocodeCity } from '../weather/api'
@@ -177,22 +177,6 @@ export function SettingsScreen({ settings, weatherSource, googleResult, onSave, 
             )}
           </Field>
         )}
-        <Field label="Reading plan">
-          {(id) => (
-            <select id={id} className="input" value={draft.plan} onChange={(e) => set('plan', e.target.value)}>
-              {Object.values(PLANS).map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
-          )}
-        </Field>
-        <Field label="Plan start date" hint="Day 1 of the reading plan. Your streak is kept if you change this.">
-          {(id) => (
-            <input id={id} className="input" type="date" value={draft.planStart} onChange={(e) => e.target.value && set('planStart', e.target.value)} />
-          )}
-        </Field>
         <Field label="Translation">
           {(id) => (
             <select id={id} className="input" value={draft.translation} onChange={(e) => set('translation', e.target.value)}>
