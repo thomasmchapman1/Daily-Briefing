@@ -15,7 +15,11 @@ export interface Settings {
   translation: string
   /** Link to finish personal worship, shown under the verse. Empty hides it. */
   worshipUrl: string
-  programStart: string
+  /** Goals shown on the progress page. */
+  goalWeight: number
+  goalWaist: number
+  /** Passphrase for cloud sync of the fitness log (the server's SYNC_KEY). Empty keeps it on this device. */
+  syncKey: string
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -28,7 +32,9 @@ export const DEFAULT_SETTINGS: Settings = {
   icsUrl: '',
   translation: 'kjv',
   worshipUrl: 'https://www.familyworship.io/dashboard',
-  programStart: '2026-09-04',
+  goalWeight: 175,
+  goalWaist: 32,
+  syncKey: '',
 }
 
 export function loadSettings(): Settings {
