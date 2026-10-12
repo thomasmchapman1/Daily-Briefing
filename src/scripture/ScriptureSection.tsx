@@ -43,7 +43,7 @@ export function ScriptureSection({ today, settings, state }: Props) {
         </div>
       )}
       <button
-        className={`btn ${read ? 'btn-secondary' : 'btn-primary'}`}
+        className={`btn btn-wide ${read ? 'btn-secondary' : 'btn-primary'}`}
         aria-pressed={read}
         onClick={() => setLog((l) => setRead(l, date, !read))}
       >

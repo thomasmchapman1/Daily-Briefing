@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react'
+import { useId, useState, type ReactNode } from 'react'
 import { PLANS, allTranslations } from '../scripture'
 import type { Settings } from '../settings'
 import { geocodeCity } from '../weather/api'
@@ -10,13 +10,15 @@ interface Props {
   onClose: () => void
 }
 
-function Field({ label, hint, children }: { label: string; hint?: ReactNode; children: ReactNode }) {
+/** A design-system .field: label above the control, optional hint below. */
+function Field({ label, hint, children }: { label: string; hint?: ReactNode; children: (id: string) => ReactNode }) {
+  const id = useId()
   return (
-    <label className="field">
-      <span className="field-label">{label}</span>
-      {children}
+    <div className="field">
+      <label htmlFor={id}>{label}</label>
+      {children(id)}
       {hint && <span className="field-hint">{hint}</span>}
-    </label>
+    </div>
   )
 }
 
@@ -40,6 +42,7 @@ export function SettingsScreen({ settings, onSave, onClose }: Props) {
   return (
     <Sheet label="Settings" aside={<span className="sheet-title">Settings</span>} onClose={onClose}>
       <form
+        className="settings"
         onSubmit={(e) => {
           e.preventDefault()
           onSave(draft)
@@ -50,12 +53,14 @@ export function SettingsScreen({ settings, onSave, onClose }: Props) {
           label="City"
           hint={lookup ?? `Shown on the masthead; used for weather when location is off or denied. (${draft.lat.toFixed(2)}, ${draft.lon.toFixed(2)})`}
         >
-          <span className="field-row">
-            <input className="input" value={draft.city} onChange={(e) => set('city', e.target.value)} autoComplete="address-level2" />
-            <button type="button" className="btn btn-secondary btn--inline" onClick={findCity}>
-              Look up
-            </button>
-          </span>
+          {(id) => (
+            <span className="field-row">
+              <input id={id} className="input" value={draft.city} onChange={(e) => set('city', e.target.value)} autoComplete="address-level2" />
+              <button type="button" className="btn btn-secondary btn-nowrap" onClick={findCity}>
+                Look up
+              </button>
+            </span>
+          )}
         </Field>
         <div className="field">
           <label className="checkbox">
@@ -67,49 +72,61 @@ export function SettingsScreen({ settings, onSave, onClose }: Props) {
           label="Calendar link (iCal)"
           hint="Google Calendar: Settings → your calendar → Secret address in iCal format. iCloud: share the calendar publicly and copy the link."
         >
-          <input
-            className="input"
-            type="url"
-            inputMode="url"
-            placeholder="https://calendar.google.com/calendar/ical/…/basic.ics"
-            value={draft.icsUrl}
-            onChange={(e) => set('icsUrl', e.target.value.trim())}
-            autoCapitalize="off"
-            autoCorrect="off"
-            spellCheck={false}
-          />
+          {(id) => (
+            <input
+              id={id}
+              className="input"
+              type="url"
+              inputMode="url"
+              placeholder="https://calendar.google.com/calendar/ical/…/basic.ics"
+              value={draft.icsUrl}
+              onChange={(e) => set('icsUrl', e.target.value.trim())}
+              autoCapitalize="off"
+              autoCorrect="off"
+              spellCheck={false}
+            />
+          )}
         </Field>
         <Field label="Reading plan">
-          <select className="input" value={draft.plan} onChange={(e) => set('plan', e.target.value)}>
-            {Object.values(PLANS).map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name}
-              </option>
-            ))}
-          </select>
+          {(id) => (
+            <select id={id} className="input" value={draft.plan} onChange={(e) => set('plan', e.target.value)}>
+              {Object.values(PLANS).map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+          )}
         </Field>
         <Field label="Plan start date" hint="Day 1 of the reading plan. Your streak is kept if you change this.">
-          <input className="input" type="date" value={draft.planStart} onChange={(e) => e.target.value && set('planStart', e.target.value)} />
+          {(id) => (
+            <input id={id} className="input" type="date" value={draft.planStart} onChange={(e) => e.target.value && set('planStart', e.target.value)} />
+          )}
         </Field>
         <Field label="Translation">
-          <select className="input" value={draft.translation} onChange={(e) => set('translation', e.target.value)}>
-            {allTranslations().map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.label}
-              </option>
-            ))}
-          </select>
+          {(id) => (
+            <select id={id} className="input" value={draft.translation} onChange={(e) => set('translation', e.target.value)}>
+              {allTranslations().map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.label}
+                </option>
+              ))}
+            </select>
+          )}
         </Field>
         <Field label="Training programme start" hint="Week 1, Day 1 of the training programme.">
-          <input
-            className="input"
-            type="date"
-            value={draft.programStart}
-            onChange={(e) => e.target.value && set('programStart', e.target.value)}
-          />
+          {(id) => (
+            <input
+              id={id}
+              className="input"
+              type="date"
+              value={draft.programStart}
+              onChange={(e) => e.target.value && set('programStart', e.target.value)}
+            />
+          )}
         </Field>
         <div style={{ paddingTop: 20 }}>
-          <button type="submit" className="btn btn-primary">
+          <button type="submit" className="btn btn-primary btn-wide">
             Save
           </button>
         </div>

@@ -6,6 +6,7 @@ import '@fontsource/cormorant-garamond/latin-400-italic.css'
 import '@fontsource/cormorant-garamond/latin-600.css'
 import '@fontsource/lora/latin-400.css'
 import '@fontsource/lora/latin-600.css'
+import './ds/styles.css'
 import './styles.css'
 import App from './App'
 

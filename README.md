@@ -53,7 +53,7 @@ Everything lives in `src/scripture/`:
 
 ## Notes and open items
 
-- The HTML prototype is in `docs/design/` (open `Daily Briefing.dc.html`, phone **1a**). It still needs the design system's `_ds/` folder to render, which wasn't part of the handoff. So the `.btn`, `.field` and `.input` classes in `src/styles.css` are rebuilt from the token list in the spec. Swap in the originals from `_ds/…/styles.css` if you have them.
+- The HTML prototype and its design system are in `docs/design/` (open `Daily Briefing.dc.html` and find phone **1a**). The app uses the design system's `styles.css` verbatim as `src/ds/styles.css`, except for its Google Fonts import. App-specific styles sit on top of it in `src/styles.css`.
 - The app icon is a placeholder ("M" in Cormorant). Replace `public/apple-touch-icon.png` and `public/icon-*.png`, or edit and re-run `npm run gen:icons` (needs Playwright).
 - Fonts are self-hosted through `@fontsource` (the same Google Fonts files), so they work offline.
 - The masthead's "Vol." counts from 1984 (Vol. XLII in 2026). Change `VOLUME_EPOCH` in `src/components/Masthead.tsx`.
