@@ -86,6 +86,17 @@ describe('sync with Vercel Blob', () => {
     }
   })
 
+  it('uses the deployment’s Vercel login when only BLOB_STORE_ID is set', async () => {
+    process.env.BLOB_STORE_ID = 'store_abc'
+    try {
+      expect(storeFromEnv()).not.toBeNull()
+      await blobStore().write({}, null)
+      expect(blob.puts.at(-1)).not.toHaveProperty('token')
+    } finally {
+      delete process.env.BLOB_STORE_ID
+    }
+  })
+
   it('reports a write conflict as false', async () => {
     const store = blobStore('t')
     expect(await store.write({}, 'stale')).toBe(false)
