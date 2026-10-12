@@ -3,7 +3,9 @@
 // everything on the device.
 //
 // The log is one JSON document, kept in whichever store the project has:
-//   Vercel Blob (preferred)  BLOB_READ_WRITE_TOKEN, set by Storage → Create → Blob → Connect.
+//   Vercel Blob (preferred)  BLOB_STORE_ID, set by Storage → Create → Blob → Connect; the function
+//                            signs in with the deployment's own Vercel identity (OIDC). Older
+//                            stores set BLOB_READ_WRITE_TOKEN instead; either works.
 //                            Stored as a private blob, so it can't be read by URL.
 //   Upstash Redis            KV_REST_API_URL + KV_REST_API_TOKEN (or UPSTASH_REDIS_REST_URL / _TOKEN).
 // And always:
@@ -35,10 +37,12 @@ const parse = (raw: string): DatedLog => {
   return isDatedLog(parsed) ? parsed : {}
 }
 
-export function blobStore(token: string): LogStore {
+/** With no token, @vercel/blob signs in with the deployment's Vercel OIDC token and BLOB_STORE_ID. */
+export function blobStore(token?: string): LogStore {
+  const auth = token ? { token } : {}
   return {
     async read() {
-      const res = await get(BLOB_PATH, { access: 'private', useCache: false, token })
+      const res = await get(BLOB_PATH, { access: 'private', useCache: false, ...auth })
       if (!res || res.statusCode !== 200) return { log: {}, version: null }
       return { log: parse(await new Response(res.stream).text()), version: res.blob.etag }
     },
@@ -46,7 +50,7 @@ export function blobStore(token: string): LogStore {
       try {
         await put(BLOB_PATH, JSON.stringify(log), {
           access: 'private',
-          token,
+          ...auth,
           contentType: 'application/json',
           addRandomSuffix: false,
           allowOverwrite: true,
@@ -87,7 +91,7 @@ export function redisStore(url: string, token: string): LogStore {
 
 export function storeFromEnv(): LogStore | null {
   const env = process.env
-  if (env.BLOB_READ_WRITE_TOKEN) return blobStore(env.BLOB_READ_WRITE_TOKEN)
+  if (env.BLOB_STORE_ID || env.BLOB_READ_WRITE_TOKEN) return blobStore(env.BLOB_READ_WRITE_TOKEN)
   const url = env.KV_REST_API_URL ?? env.UPSTASH_REDIS_REST_URL
   const token = env.KV_REST_API_TOKEN ?? env.UPSTASH_REDIS_REST_TOKEN
   return url && token ? redisStore(url, token) : null

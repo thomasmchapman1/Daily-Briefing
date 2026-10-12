@@ -87,7 +87,7 @@ The Scripture section shows one verse a day and sends you to your worship site (
 
 The log is saved on the device. To sync it between devices and keep it safe if Safari's data is cleared:
 
-1. In Vercel, open the project → **Storage** → **Create Database** → **Blob** → create it and connect it to this project (all environments). This adds `BLOB_READ_WRITE_TOKEN`. The log is stored as a private blob, `training/log.json`. (Upstash Redis works too: it sets `KV_REST_API_URL` and `KV_REST_API_TOKEN`.)
+1. In Vercel, open the project → **Storage** → **Create Database** → **Blob** → create it and connect it to this project (all environments). This adds `BLOB_STORE_ID` (older stores add `BLOB_READ_WRITE_TOKEN`); the sync function signs in with the project's own Vercel identity, so there's no token to copy. The log is stored as a private blob, `training/log.json`. (Upstash Redis works too: it sets `KV_REST_API_URL` and `KV_REST_API_TOKEN`.)
 2. **Settings → Environment Variables**: add `SYNC_KEY`, a passphrase of your choice.
 3. Redeploy. In the app, open settings and enter the same passphrase as the **Training log sync passcode** on each device.
 
