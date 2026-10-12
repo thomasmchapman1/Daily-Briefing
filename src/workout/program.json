@@ -1,0 +1,837 @@
+{
+ "name": "Eight-week base",
+ "weeks": [
+  {
+   "days": [
+    {
+     "title": "Upper body",
+     "minutes": 45,
+     "exercises": [
+      {
+       "name": "Bench press",
+       "spec": "4 × 6 · 145 lb"
+      },
+      {
+       "name": "Bent-over row",
+       "spec": "4 × 8 · 115 lb"
+      },
+      {
+       "name": "Overhead press",
+       "spec": "3 × 8 · 80 lb"
+      },
+      {
+       "name": "Chin-up",
+       "spec": "3 × 5"
+      }
+     ]
+    },
+    {
+     "title": "Rest day",
+     "minutes": 0,
+     "exercises": []
+    },
+    {
+     "title": "Lower body",
+     "minutes": 50,
+     "exercises": [
+      {
+       "name": "Back squat",
+       "spec": "4 × 6 · 160 lb"
+      },
+      {
+       "name": "Romanian deadlift",
+       "spec": "3 × 8 · 110 lb"
+      },
+      {
+       "name": "Walking lunge",
+       "spec": "3 × 12 · 30 lb"
+      },
+      {
+       "name": "Plank",
+       "spec": "3 × 30 s"
+      }
+     ]
+    },
+    {
+     "title": "Conditioning",
+     "minutes": 30,
+     "exercises": [
+      {
+       "name": "Easy run",
+       "spec": "20 min"
+      },
+      {
+       "name": "Strides",
+       "spec": "6 × 20 s"
+      }
+     ]
+    },
+    {
+     "title": "Full body",
+     "minutes": 50,
+     "exercises": [
+      {
+       "name": "Deadlift",
+       "spec": "3 × 5 · 205 lb"
+      },
+      {
+       "name": "Incline dumbbell press",
+       "spec": "3 × 10 · 40 lb"
+      },
+      {
+       "name": "Goblet squat",
+       "spec": "3 × 10 · 45 lb"
+      },
+      {
+       "name": "Farmer carry",
+       "spec": "3 × 40 m · 50 lb"
+      }
+     ]
+    },
+    {
+     "title": "Long walk",
+     "minutes": 60,
+     "exercises": [
+      {
+       "name": "Walk",
+       "spec": "60 min"
+      }
+     ]
+    },
+    {
+     "title": "Rest day",
+     "minutes": 0,
+     "exercises": []
+    }
+   ]
+  },
+  {
+   "days": [
+    {
+     "title": "Upper body",
+     "minutes": 45,
+     "exercises": [
+      {
+       "name": "Bench press",
+       "spec": "4 × 6 · 150 lb"
+      },
+      {
+       "name": "Bent-over row",
+       "spec": "4 × 8 · 120 lb"
+      },
+      {
+       "name": "Overhead press",
+       "spec": "3 × 8 · 82.5 lb"
+      },
+      {
+       "name": "Chin-up",
+       "spec": "3 × 5"
+      }
+     ]
+    },
+    {
+     "title": "Rest day",
+     "minutes": 0,
+     "exercises": []
+    },
+    {
+     "title": "Lower body",
+     "minutes": 50,
+     "exercises": [
+      {
+       "name": "Back squat",
+       "spec": "4 × 6 · 165 lb"
+      },
+      {
+       "name": "Romanian deadlift",
+       "spec": "3 × 8 · 115 lb"
+      },
+      {
+       "name": "Walking lunge",
+       "spec": "3 × 12 · 32 lb"
+      },
+      {
+       "name": "Plank",
+       "spec": "3 × 33 s"
+      }
+     ]
+    },
+    {
+     "title": "Conditioning",
+     "minutes": 30,
+     "exercises": [
+      {
+       "name": "Easy run",
+       "spec": "22 min"
+      },
+      {
+       "name": "Strides",
+       "spec": "6 × 20 s"
+      }
+     ]
+    },
+    {
+     "title": "Full body",
+     "minutes": 50,
+     "exercises": [
+      {
+       "name": "Deadlift",
+       "spec": "3 × 5 · 215 lb"
+      },
+      {
+       "name": "Incline dumbbell press",
+       "spec": "3 × 10 · 42.5 lb"
+      },
+      {
+       "name": "Goblet squat",
+       "spec": "3 × 10 · 45 lb"
+      },
+      {
+       "name": "Farmer carry",
+       "spec": "3 × 40 m · 50 lb"
+      }
+     ]
+    },
+    {
+     "title": "Long walk",
+     "minutes": 60,
+     "exercises": [
+      {
+       "name": "Walk",
+       "spec": "60 min"
+      }
+     ]
+    },
+    {
+     "title": "Rest day",
+     "minutes": 0,
+     "exercises": []
+    }
+   ]
+  },
+  {
+   "days": [
+    {
+     "title": "Upper body",
+     "minutes": 45,
+     "exercises": [
+      {
+       "name": "Bench press",
+       "spec": "4 × 6 · 155 lb"
+      },
+      {
+       "name": "Bent-over row",
+       "spec": "4 × 8 · 125 lb"
+      },
+      {
+       "name": "Overhead press",
+       "spec": "3 × 8 · 85 lb"
+      },
+      {
+       "name": "Chin-up",
+       "spec": "3 × 6"
+      }
+     ]
+    },
+    {
+     "title": "Rest day",
+     "minutes": 0,
+     "exercises": []
+    },
+    {
+     "title": "Lower body",
+     "minutes": 50,
+     "exercises": [
+      {
+       "name": "Back squat",
+       "spec": "4 × 6 · 170 lb"
+      },
+      {
+       "name": "Romanian deadlift",
+       "spec": "3 × 8 · 120 lb"
+      },
+      {
+       "name": "Walking lunge",
+       "spec": "3 × 12 · 34 lb"
+      },
+      {
+       "name": "Plank",
+       "spec": "3 × 36 s"
+      }
+     ]
+    },
+    {
+     "title": "Conditioning",
+     "minutes": 30,
+     "exercises": [
+      {
+       "name": "Easy run",
+       "spec": "24 min"
+      },
+      {
+       "name": "Strides",
+       "spec": "6 × 20 s"
+      }
+     ]
+    },
+    {
+     "title": "Full body",
+     "minutes": 50,
+     "exercises": [
+      {
+       "name": "Deadlift",
+       "spec": "3 × 5 · 225 lb"
+      },
+      {
+       "name": "Incline dumbbell press",
+       "spec": "3 × 10 · 45 lb"
+      },
+      {
+       "name": "Goblet squat",
+       "spec": "3 × 10 · 50 lb"
+      },
+      {
+       "name": "Farmer carry",
+       "spec": "3 × 40 m · 55 lb"
+      }
+     ]
+    },
+    {
+     "title": "Long walk",
+     "minutes": 60,
+     "exercises": [
+      {
+       "name": "Walk",
+       "spec": "60 min"
+      }
+     ]
+    },
+    {
+     "title": "Rest day",
+     "minutes": 0,
+     "exercises": []
+    }
+   ]
+  },
+  {
+   "days": [
+    {
+     "title": "Upper body",
+     "minutes": 45,
+     "exercises": [
+      {
+       "name": "Bench press",
+       "spec": "4 × 6 · 160 lb"
+      },
+      {
+       "name": "Bent-over row",
+       "spec": "4 × 8 · 130 lb"
+      },
+      {
+       "name": "Overhead press",
+       "spec": "3 × 8 · 87.5 lb"
+      },
+      {
+       "name": "Chin-up",
+       "spec": "3 × 6"
+      }
+     ]
+    },
+    {
+     "title": "Rest day",
+     "minutes": 0,
+     "exercises": []
+    },
+    {
+     "title": "Lower body",
+     "minutes": 50,
+     "exercises": [
+      {
+       "name": "Back squat",
+       "spec": "4 × 6 · 175 lb"
+      },
+      {
+       "name": "Romanian deadlift",
+       "spec": "3 × 8 · 125 lb"
+      },
+      {
+       "name": "Walking lunge",
+       "spec": "3 × 12 · 36 lb"
+      },
+      {
+       "name": "Plank",
+       "spec": "3 × 39 s"
+      }
+     ]
+    },
+    {
+     "title": "Conditioning",
+     "minutes": 30,
+     "exercises": [
+      {
+       "name": "Easy run",
+       "spec": "26 min"
+      },
+      {
+       "name": "Strides",
+       "spec": "6 × 20 s"
+      }
+     ]
+    },
+    {
+     "title": "Full body",
+     "minutes": 50,
+     "exercises": [
+      {
+       "name": "Deadlift",
+       "spec": "3 × 5 · 235 lb"
+      },
+      {
+       "name": "Incline dumbbell press",
+       "spec": "3 × 10 · 47.5 lb"
+      },
+      {
+       "name": "Goblet squat",
+       "spec": "3 × 10 · 50 lb"
+      },
+      {
+       "name": "Farmer carry",
+       "spec": "3 × 40 m · 55 lb"
+      }
+     ]
+    },
+    {
+     "title": "Long walk",
+     "minutes": 60,
+     "exercises": [
+      {
+       "name": "Walk",
+       "spec": "60 min"
+      }
+     ]
+    },
+    {
+     "title": "Rest day",
+     "minutes": 0,
+     "exercises": []
+    }
+   ]
+  },
+  {
+   "days": [
+    {
+     "title": "Upper body",
+     "minutes": 45,
+     "exercises": [
+      {
+       "name": "Bench press",
+       "spec": "4 × 6 · 165 lb"
+      },
+      {
+       "name": "Bent-over row",
+       "spec": "4 × 8 · 135 lb"
+      },
+      {
+       "name": "Overhead press",
+       "spec": "3 × 8 · 90 lb"
+      },
+      {
+       "name": "Chin-up",
+       "spec": "3 × 7"
+      }
+     ]
+    },
+    {
+     "title": "Rest day",
+     "minutes": 0,
+     "exercises": []
+    },
+    {
+     "title": "Lower body",
+     "minutes": 50,
+     "exercises": [
+      {
+       "name": "Back squat",
+       "spec": "4 × 6 · 180 lb"
+      },
+      {
+       "name": "Romanian deadlift",
+       "spec": "3 × 8 · 130 lb"
+      },
+      {
+       "name": "Walking lunge",
+       "spec": "3 × 12 · 38 lb"
+      },
+      {
+       "name": "Plank",
+       "spec": "3 × 42 s"
+      }
+     ]
+    },
+    {
+     "title": "Conditioning",
+     "minutes": 30,
+     "exercises": [
+      {
+       "name": "Easy run",
+       "spec": "28 min"
+      },
+      {
+       "name": "Strides",
+       "spec": "6 × 20 s"
+      }
+     ]
+    },
+    {
+     "title": "Full body",
+     "minutes": 50,
+     "exercises": [
+      {
+       "name": "Deadlift",
+       "spec": "3 × 5 · 245 lb"
+      },
+      {
+       "name": "Incline dumbbell press",
+       "spec": "3 × 10 · 50 lb"
+      },
+      {
+       "name": "Goblet squat",
+       "spec": "3 × 10 · 55 lb"
+      },
+      {
+       "name": "Farmer carry",
+       "spec": "3 × 40 m · 60 lb"
+      }
+     ]
+    },
+    {
+     "title": "Long walk",
+     "minutes": 60,
+     "exercises": [
+      {
+       "name": "Walk",
+       "spec": "60 min"
+      }
+     ]
+    },
+    {
+     "title": "Rest day",
+     "minutes": 0,
+     "exercises": []
+    }
+   ]
+  },
+  {
+   "days": [
+    {
+     "title": "Upper body",
+     "minutes": 45,
+     "exercises": [
+      {
+       "name": "Bench press",
+       "spec": "4 × 6 · 170 lb"
+      },
+      {
+       "name": "Bent-over row",
+       "spec": "4 × 8 · 140 lb"
+      },
+      {
+       "name": "Overhead press",
+       "spec": "3 × 8 · 92.5 lb"
+      },
+      {
+       "name": "Chin-up",
+       "spec": "3 × 7"
+      }
+     ]
+    },
+    {
+     "title": "Rest day",
+     "minutes": 0,
+     "exercises": []
+    },
+    {
+     "title": "Lower body",
+     "minutes": 50,
+     "exercises": [
+      {
+       "name": "Back squat",
+       "spec": "4 × 6 · 185 lb"
+      },
+      {
+       "name": "Romanian deadlift",
+       "spec": "3 × 8 · 135 lb"
+      },
+      {
+       "name": "Walking lunge",
+       "spec": "3 × 12 · 40 lb"
+      },
+      {
+       "name": "Plank",
+       "spec": "3 × 45 s"
+      }
+     ]
+    },
+    {
+     "title": "Conditioning",
+     "minutes": 30,
+     "exercises": [
+      {
+       "name": "Easy run",
+       "spec": "30 min"
+      },
+      {
+       "name": "Strides",
+       "spec": "6 × 20 s"
+      }
+     ]
+    },
+    {
+     "title": "Full body",
+     "minutes": 50,
+     "exercises": [
+      {
+       "name": "Deadlift",
+       "spec": "3 × 5 · 255 lb"
+      },
+      {
+       "name": "Incline dumbbell press",
+       "spec": "3 × 10 · 52.5 lb"
+      },
+      {
+       "name": "Goblet squat",
+       "spec": "3 × 10 · 55 lb"
+      },
+      {
+       "name": "Farmer carry",
+       "spec": "3 × 40 m · 60 lb"
+      }
+     ]
+    },
+    {
+     "title": "Long walk",
+     "minutes": 60,
+     "exercises": [
+      {
+       "name": "Walk",
+       "spec": "60 min"
+      }
+     ]
+    },
+    {
+     "title": "Rest day",
+     "minutes": 0,
+     "exercises": []
+    }
+   ]
+  },
+  {
+   "days": [
+    {
+     "title": "Upper body",
+     "minutes": 45,
+     "exercises": [
+      {
+       "name": "Bench press",
+       "spec": "4 × 6 · 175 lb"
+      },
+      {
+       "name": "Bent-over row",
+       "spec": "4 × 8 · 145 lb"
+      },
+      {
+       "name": "Overhead press",
+       "spec": "3 × 8 · 95 lb"
+      },
+      {
+       "name": "Chin-up",
+       "spec": "3 × 8"
+      }
+     ]
+    },
+    {
+     "title": "Rest day",
+     "minutes": 0,
+     "exercises": []
+    },
+    {
+     "title": "Lower body",
+     "minutes": 50,
+     "exercises": [
+      {
+       "name": "Back squat",
+       "spec": "4 × 6 · 190 lb"
+      },
+      {
+       "name": "Romanian deadlift",
+       "spec": "3 × 8 · 140 lb"
+      },
+      {
+       "name": "Walking lunge",
+       "spec": "3 × 12 · 42 lb"
+      },
+      {
+       "name": "Plank",
+       "spec": "3 × 48 s"
+      }
+     ]
+    },
+    {
+     "title": "Conditioning",
+     "minutes": 30,
+     "exercises": [
+      {
+       "name": "Easy run",
+       "spec": "32 min"
+      },
+      {
+       "name": "Strides",
+       "spec": "6 × 20 s"
+      }
+     ]
+    },
+    {
+     "title": "Full body",
+     "minutes": 50,
+     "exercises": [
+      {
+       "name": "Deadlift",
+       "spec": "3 × 5 · 265 lb"
+      },
+      {
+       "name": "Incline dumbbell press",
+       "spec": "3 × 10 · 55 lb"
+      },
+      {
+       "name": "Goblet squat",
+       "spec": "3 × 10 · 60 lb"
+      },
+      {
+       "name": "Farmer carry",
+       "spec": "3 × 40 m · 65 lb"
+      }
+     ]
+    },
+    {
+     "title": "Long walk",
+     "minutes": 60,
+     "exercises": [
+      {
+       "name": "Walk",
+       "spec": "60 min"
+      }
+     ]
+    },
+    {
+     "title": "Rest day",
+     "minutes": 0,
+     "exercises": []
+    }
+   ]
+  },
+  {
+   "days": [
+    {
+     "title": "Upper body",
+     "minutes": 45,
+     "exercises": [
+      {
+       "name": "Bench press",
+       "spec": "4 × 6 · 180 lb"
+      },
+      {
+       "name": "Bent-over row",
+       "spec": "4 × 8 · 150 lb"
+      },
+      {
+       "name": "Overhead press",
+       "spec": "3 × 8 · 97.5 lb"
+      },
+      {
+       "name": "Chin-up",
+       "spec": "3 × 8"
+      }
+     ]
+    },
+    {
+     "title": "Rest day",
+     "minutes": 0,
+     "exercises": []
+    },
+    {
+     "title": "Lower body",
+     "minutes": 50,
+     "exercises": [
+      {
+       "name": "Back squat",
+       "spec": "4 × 6 · 195 lb"
+      },
+      {
+       "name": "Romanian deadlift",
+       "spec": "3 × 8 · 145 lb"
+      },
+      {
+       "name": "Walking lunge",
+       "spec": "3 × 12 · 44 lb"
+      },
+      {
+       "name": "Plank",
+       "spec": "3 × 51 s"
+      }
+     ]
+    },
+    {
+     "title": "Conditioning",
+     "minutes": 30,
+     "exercises": [
+      {
+       "name": "Easy run",
+       "spec": "34 min"
+      },
+      {
+       "name": "Strides",
+       "spec": "6 × 20 s"
+      }
+     ]
+    },
+    {
+     "title": "Full body",
+     "minutes": 50,
+     "exercises": [
+      {
+       "name": "Deadlift",
+       "spec": "3 × 5 · 275 lb"
+      },
+      {
+       "name": "Incline dumbbell press",
+       "spec": "3 × 10 · 57.5 lb"
+      },
+      {
+       "name": "Goblet squat",
+       "spec": "3 × 10 · 60 lb"
+      },
+      {
+       "name": "Farmer carry",
+       "spec": "3 × 40 m · 65 lb"
+      }
+     ]
+    },
+    {
+     "title": "Long walk",
+     "minutes": 60,
+     "exercises": [
+      {
+       "name": "Walk",
+       "spec": "60 min"
+      }
+     ]
+    },
+    {
+     "title": "Rest day",
+     "minutes": 0,
+     "exercises": []
+    }
+   ]
+  }
+ ]
+}

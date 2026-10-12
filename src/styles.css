@@ -1,0 +1,542 @@
+/* App styles. Tokens and the .btn / .field / .input classes come from the
+   Classical design system (src/ds/styles.css), imported first. */
+:root {
+  --gutter: 26px;
+  color-scheme: light;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  background: var(--color-bg);
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  text-align: inherit;
+  cursor: pointer;
+}
+
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Page frame ---------- */
+.page {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: calc(env(safe-area-inset-top) + 8px) var(--gutter) calc(48px + env(safe-area-inset-bottom));
+}
+
+.section {
+  padding: 20px 0;
+  border-bottom: 1px solid var(--color-divider);
+}
+
+.section--scripture,
+.section--training {
+  padding: 22px 0;
+}
+
+.section:last-of-type {
+  border-bottom: 0;
+}
+
+/* ---------- Kicker ---------- */
+.kicker-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.kicker {
+  font-family: var(--font-body);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-accent-700);
+}
+
+.kicker-meta {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--color-neutral-700);
+  font-variant-numeric: tabular-nums;
+}
+
+.muted {
+  color: var(--color-neutral-700);
+}
+
+.section-error {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: var(--color-neutral-700);
+}
+
+/* ---------- Masthead ---------- */
+.masthead {
+  text-align: center;
+  border-bottom: 1px solid var(--color-text);
+  padding-bottom: 10px;
+}
+
+.masthead-vol {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-neutral-700);
+  font-variant-numeric: tabular-nums;
+}
+
+.masthead-title {
+  display: block;
+  width: 100%;
+  text-align: center;
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-size: 44px;
+  line-height: 1;
+  margin: 6px 0 4px;
+}
+
+.masthead-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  border-top: 1px solid var(--color-divider);
+  padding-top: 7px;
+  margin-top: 8px;
+}
+
+/* ---------- Weather ---------- */
+.wx-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+  margin-top: 6px;
+}
+
+.wx-temp {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-size: 72px;
+  line-height: 0.9;
+  font-variant-numeric: tabular-nums;
+}
+
+.wx-side {
+  padding-bottom: 6px;
+}
+
+.wx-cond {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 20px;
+  line-height: 1.1;
+}
+
+.wx-meta {
+  font-size: 13px;
+  color: var(--color-neutral-700);
+  font-variant-numeric: tabular-nums;
+}
+
+.wx-summary {
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: justify;
+  text-wrap: pretty;
+  hyphens: auto;
+  margin: 12px 0 14px;
+}
+
+.wx-hours {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  border-top: 1px solid var(--color-divider);
+  border-bottom: 1px solid var(--color-divider);
+}
+
+.wx-hour {
+  text-align: center;
+  padding: 8px 0;
+}
+
+.wx-hour-label {
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+.wx-hour-temp {
+  font-family: var(--font-heading);
+  font-size: 20px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Tappable rows ---------- */
+.tap {
+  width: 100%;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+.tap:active {
+  background: var(--color-accent-100);
+}
+
+/* ---------- The Day ---------- */
+.events {
+  margin-top: 8px;
+}
+
+.event {
+  display: grid;
+  grid-template-columns: 58px 1fr 16px;
+  gap: 10px;
+  align-items: baseline;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--color-divider);
+}
+
+.event-time {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 17px;
+  font-variant-numeric: tabular-nums;
+}
+
+.event-title {
+  font-size: 15px;
+}
+
+.event-detail {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--color-neutral-700);
+  margin-top: 4px;
+}
+
+.chevron {
+  font-size: 14px;
+  color: var(--color-accent);
+  display: inline-block;
+  transition: transform 0.2s;
+  justify-self: center;
+}
+
+.chevron--open {
+  transform: rotate(90deg);
+}
+
+.empty-note {
+  font-family: var(--font-heading);
+  font-style: italic;
+  font-size: 17px;
+  margin: 10px 0 0;
+}
+
+/* ---------- Scripture ---------- */
+.scripture-ref {
+  display: block;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 24px;
+  line-height: 1.15;
+  margin: 8px 0 2px;
+}
+
+.scripture-quote {
+  margin: 14px 0;
+  padding-left: 14px;
+  border-left: 1px solid var(--color-accent);
+  font-family: var(--font-heading);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 20px;
+  line-height: 1.35;
+  text-wrap: pretty;
+}
+
+.scripture-attr {
+  font-size: 12px;
+  color: var(--color-neutral-700);
+  margin-bottom: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Training ---------- */
+.training-title {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 24px;
+  line-height: 1.15;
+  margin: 8px 0 4px;
+}
+
+.training-meta {
+  font-size: 12px;
+  color: var(--color-neutral-700);
+  margin-bottom: 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+.exercise {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--color-divider);
+}
+
+.check {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--color-accent);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  line-height: 1;
+  color: var(--color-accent-700);
+}
+
+.exercise-name {
+  flex: 1;
+  font-size: 15px;
+}
+
+.exercise-spec {
+  font-size: 13px;
+  color: var(--color-neutral-700);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.exercise--done .exercise-name,
+.exercise--done .exercise-spec {
+  opacity: 0.45;
+}
+
+.exercise--done .exercise-name {
+  text-decoration: line-through;
+}
+
+/* ---------- Colophon ---------- */
+.colophon {
+  text-align: center;
+  font-family: var(--font-heading);
+  font-style: italic;
+  font-size: 15px;
+  color: var(--color-neutral-700);
+  padding-top: 8px;
+}
+
+/* ---------- Buttons & fields (on top of the design system's classes) ---------- */
+.btn-wide {
+  width: 100%;
+}
+
+.btn-nowrap {
+  flex: none;
+  white-space: nowrap;
+}
+
+.settings .field {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--color-divider);
+}
+
+.field-hint {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--color-neutral-700);
+}
+
+.field-row {
+  display: flex;
+  gap: 10px;
+}
+
+/* iOS zooms into inputs under 16px on focus; keep the system look otherwise. */
+@supports (-webkit-touch-callout: none) {
+  .input {
+    font-size: 16px;
+  }
+}
+
+/* iOS keeps :hover after a tap, which would leave the system's hover tint stuck. */
+@media (hover: none) {
+  .btn-primary:hover,
+  .btn-secondary:hover,
+  .btn-ghost:hover {
+    background: transparent;
+  }
+  .btn-primary:active {
+    background: color-mix(in srgb, var(--color-accent) 22%, transparent);
+  }
+  .btn-secondary:active {
+    background: color-mix(in srgb, var(--color-text) 14%, transparent);
+  }
+}
+
+select.input {
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--color-accent) 50%),
+    linear-gradient(135deg, var(--color-accent) 50%, transparent 50%);
+  background-position: calc(100% - 15px) 50%, calc(100% - 10px) 50%;
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
+  padding-right: 28px;
+}
+
+.field > label.checkbox {
+  display: flex;
+  margin-bottom: 0;
+  color: var(--color-text);
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.checkbox input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--color-accent);
+}
+
+/* ---------- Overlay screens (reader, settings) ---------- */
+.sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  background: var(--color-bg);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+.sheet-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--color-text);
+}
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  font-size: 13px;
+  color: var(--color-accent-700);
+}
+
+.sheet-title {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 20px;
+}
+
+.reader-heading {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 24px;
+  line-height: 1.15;
+  margin: 22px 0 10px;
+}
+
+.reader-text {
+  font-family: var(--font-heading);
+  font-size: 21px;
+  line-height: 1.42;
+  text-align: justify;
+  text-wrap: pretty;
+  hyphens: auto;
+  margin: 0;
+}
+
+.reader-text sup {
+  font-family: var(--font-body);
+  font-size: 10px;
+  color: var(--color-accent-700);
+  margin-right: 2px;
+  font-variant-numeric: tabular-nums;
+}
+
+.reader-foot {
+  margin-top: 22px;
+  font-size: 12px;
+  color: var(--color-neutral-700);
+}
+
+/* ---------- Skeleton (first load only) ---------- */
+.skeleton {
+  margin-top: 10px;
+}
+
+.skeleton-row {
+  height: 22px;
+  border-bottom: 1px solid var(--color-divider);
+}
+
+.skeleton-row + .skeleton-row {
+  margin-top: 10px;
+}
+
+/* ---------- Pull to refresh ---------- */
+.ptr {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: calc(env(safe-area-inset-top) + 4px);
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+  color: var(--color-accent);
+  z-index: 5;
+}
+
+.ptr-spin {
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chevron {
+    transition: none;
+  }
+  .ptr-spin {
+    animation: none;
+  }
+}
