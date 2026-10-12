@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { issueLabel } from './components/Masthead'
 import { dayOfYear, toRoman, clockTime } from './lib/date'
 import { buildToday, getPlanDay, streak } from './scripture'
+import { splitReference } from './scripture/refs'
 import type { Passage } from './scripture/types'
 import { firstHourIndex, toForecast, type OpenMeteo } from './weather/api'
 import { compass } from './weather/summary'
@@ -27,12 +28,30 @@ describe('masthead issue numbers', () => {
 })
 
 describe('scripture', () => {
-  const settings = { plan: 'default-365', planStart: '2026-01-01', translation: 'kjv' }
+  const settings = { plan: 'mcheyne', planStart: '2026-01-01', translation: 'kjv' }
 
   it('maps a date to a plan day', () => {
     expect(getPlanDay(new Date(2026, 9, 11), settings).planDay).toBe(284)
     expect(getPlanDay(new Date(2027, 0, 1), settings).planDay).toBe(1)
-    expect(getPlanDay(new Date(2026, 0, 1), settings).references).toEqual(['Psalm 1', 'Matthew 1'])
+    expect(getPlanDay(new Date(2026, 0, 1), settings).references).toEqual(['Genesis 1', 'Matthew 1', 'Ezra 1', 'Acts 1'])
+    expect(getPlanDay(new Date(2026, 11, 31), settings).references).toEqual(['2 Chronicles 36', 'Revelation 22', 'Malachi 4', 'John 21'])
+  })
+
+  it('repeats 28 February on leap days and still ends on 31 December', () => {
+    const day = (y: number, m: number, d: number) => getPlanDay(new Date(y, m, d), settings).planDay
+    expect(day(2028, 1, 28)).toBe(59)
+    expect(day(2028, 1, 29)).toBe(59)
+    expect(day(2028, 2, 1)).toBe(60)
+    expect(day(2028, 11, 31)).toBe(365)
+    expect(day(2029, 0, 1)).toBe(1)
+    expect(day(2027, 0, 1)).toBe(1)
+  })
+
+  it('splits references into fetchable pieces', () => {
+    expect(splitReference('Psalms 52–54')).toEqual(['Psalms 52', 'Psalms 53', 'Psalms 54'])
+    expect(splitReference('Exodus 11; Exodus 12:1–21')).toEqual(['Exodus 11', 'Exodus 12:1-21'])
+    expect(splitReference('Luke 1:39–80')).toEqual(['Luke 1:39-80'])
+    expect(splitReference('Song of Solomon 3')).toEqual(['Song of Solomon 3'])
   })
 
   it('builds excerpt and attribution', () => {

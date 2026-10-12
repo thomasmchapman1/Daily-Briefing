@@ -11,6 +11,10 @@ interface Props {
   state: SectionState<ScriptureToday>
 }
 
+function pairs<T>(items: T[]): T[][] {
+  return items.length > 2 ? Array.from({ length: Math.ceil(items.length / 2) }, (_, i) => items.slice(i * 2, i * 2 + 2)) : [items]
+}
+
 export function ScriptureSection({ today, settings, state }: Props) {
   const [log, setLog] = useState(loadReadLog)
   const [readerOpen, setReaderOpen] = useState(false)
@@ -30,7 +34,12 @@ export function ScriptureSection({ today, settings, state }: Props) {
         <span className="kicker-meta">{days}-day streak</span>
       </div>
       <button className="scripture-ref" onClick={() => setReaderOpen(true)}>
-        {references.join(' · ')}
+        {/* Two readings per line: M'Cheyne pairs them (family, then private). */}
+        {pairs(references).map((pair) => (
+          <span key={pair.join()} style={{ display: 'block' }}>
+            {pair.join(' · ')}
+          </span>
+        ))}
       </button>
       {data?.excerpt ? (
         <>

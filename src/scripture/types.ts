@@ -12,6 +12,12 @@ export interface ScriptureSettings {
 export interface ReadingPlan {
   id: string
   name: string
+  about?: string
+  /**
+   * "repeat": the plan follows the calendar (day 1 = 1 January in a common
+   * year), so 29 February repeats the day before and 31 December stays last.
+   */
+  leapDay?: 'repeat'
   /** Day number (1-based, as a string key) → passage references. */
   days: Record<string, string[]>
 }

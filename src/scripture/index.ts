@@ -1,8 +1,9 @@
 // Scripture module. The rest of the app only uses this file's exports and
 // ScriptureSection; plan, translation and text source are all swappable.
-import { daysBetween, fromIsoDate } from '../lib/date'
+import { addDays, daysBetween, fromIsoDate } from '../lib/date'
 import { getPlan } from './plans'
 import { fetchPassage } from './providers'
+import { splitReference } from './refs'
 import type { Passage, ScriptureSettings, ScriptureToday } from './types'
 
 export type { ScriptureSettings, ScriptureToday, Passage } from './types'
@@ -17,9 +18,27 @@ const EXCERPT_MAX_CHARS = 170
 export function getPlanDay(date: Date, settings: ScriptureSettings): { planDay: number; references: string[] } {
   const plan = getPlan(settings.plan)
   const length = Object.keys(plan.days).length
-  const elapsed = daysBetween(fromIsoDate(settings.planStart), date)
+  const start = fromIsoDate(settings.planStart)
+  let elapsed = daysBetween(start, date)
+  if (plan.leapDay === 'repeat' && elapsed > 0) elapsed -= leapDaysBetween(addDays(start, 1), date)
   const planDay = (((elapsed % length) + length) % length) + 1
   return { planDay, references: plan.days[String(planDay)] ?? [] }
+}
+
+/** Number of 29 Februaries in [from, to]. */
+export function leapDaysBetween(from: Date, to: Date): number {
+  let n = 0
+  for (let y = from.getFullYear(); y <= to.getFullYear(); y++) {
+    const feb29 = new Date(y, 1, 29)
+    if (feb29.getMonth() === 1 && feb29 >= from && feb29 <= to) n++
+  }
+  return n
+}
+
+/** Fetch one plan reference, which may span several chapters or pieces, as a single passage. */
+async function fetchReference(ref: string, translation: string, signal?: AbortSignal): Promise<Passage> {
+  const parts = await Promise.all(splitReference(ref).map((q) => fetchPassage(q, translation, signal)))
+  return { ...parts[0], reference: ref, verses: parts.flatMap((p) => p.verses) }
 }
 
 function singular(book: string): string {
@@ -74,7 +93,7 @@ export function buildToday(planDay: number, references: string[], passages: Pass
 /** Today's reading with text. Rejects if the text provider can't be reached. */
 export async function getToday(date: Date, settings: ScriptureSettings, signal?: AbortSignal): Promise<ScriptureToday> {
   const { planDay, references } = getPlanDay(date, settings)
-  const passages = await Promise.all(references.map((r) => fetchPassage(r, settings.translation, signal)))
+  const passages = await Promise.all(references.map((r) => fetchReference(r, settings.translation, signal)))
   return buildToday(planDay, references, passages)
 }
 

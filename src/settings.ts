@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react'
 import { load, save } from './lib/storage'
+import { DEFAULT_PLAN, PLANS } from './scripture/plans'
 
 export interface Settings {
   city: string
@@ -27,14 +28,17 @@ export const DEFAULT_SETTINGS: Settings = {
   calendarSource: 'google',
   googleCalendars: [],
   icsUrl: '',
-  plan: 'default-365',
+  plan: DEFAULT_PLAN,
   planStart: `${new Date().getFullYear()}-01-01`,
   translation: 'kjv',
   programStart: '2026-09-04',
 }
 
 export function loadSettings(): Settings {
-  return { ...DEFAULT_SETTINGS, ...load<Partial<Settings>>('settings', {}) }
+  const settings = { ...DEFAULT_SETTINGS, ...load<Partial<Settings>>('settings', {}) }
+  // A saved plan that no longer exists (e.g. the old placeholder) falls back to the default.
+  if (!PLANS[settings.plan]) settings.plan = DEFAULT_PLAN
+  return settings
 }
 
 export function useSettings(): [Settings, (next: Settings) => void] {

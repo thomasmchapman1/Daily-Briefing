@@ -7,6 +7,8 @@ export const PLANS: Record<string, ReadingPlan> = Object.fromEntries(
   Object.values(files).map((plan) => [plan.id, plan]),
 )
 
+export const DEFAULT_PLAN = 'mcheyne'
+
 export function getPlan(id: string): ReadingPlan {
-  return PLANS[id] ?? PLANS['default-365']
+  return PLANS[id] ?? PLANS[DEFAULT_PLAN]
 }

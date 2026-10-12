@@ -12,20 +12,27 @@ export function Reader({ references, passages, onClose }: Props) {
   return (
     <Sheet label="Today’s reading" aside={<span className="kicker">Scripture</span>} onClose={onClose}>
       {passages ? (
-        passages.map((p) => (
-          <article key={p.reference}>
-            <h2 className="reader-heading">{p.reference}</h2>
-            <p className="reader-text">
-              {p.verses.map((v, i) => (
-                <span key={`${v.chapter}:${v.verse}`}>
-                  {i > 0 && ' '}
-                  <sup>{v.verse}</sup>
-                  {v.text}
-                </span>
-              ))}
-            </p>
-          </article>
-        ))
+        passages.map((p) => {
+          // Readings like "Psalms 52–54" span chapters: label each chapter's first verse "53:1".
+          const multiChapter = p.verses.some((v) => v.chapter !== p.verses[0]?.chapter)
+          return (
+            <article key={p.reference}>
+              <h2 className="reader-heading">{p.reference}</h2>
+              <p className="reader-text">
+                {p.verses.map((v, i) => {
+                  const newChapter = multiChapter && (i === 0 || p.verses[i - 1].chapter !== v.chapter)
+                  return (
+                    <span key={`${v.chapter}:${v.verse}`}>
+                      {i > 0 && ' '}
+                      <sup>{newChapter ? `${v.chapter}:${v.verse}` : v.verse}</sup>
+                      {v.text}
+                    </span>
+                  )
+                })}
+              </p>
+            </article>
+          )
+        })
       ) : (
         <>
           <h2 className="reader-heading">{references.join(' · ')}</h2>
