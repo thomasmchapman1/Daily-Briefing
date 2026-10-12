@@ -6,6 +6,7 @@ import { splitReference } from './scripture/refs'
 import type { Passage } from './scripture/types'
 import { firstHourIndex, toForecast, type OpenMeteo } from './weather/api'
 import { compass } from './weather/summary'
+import { loadSettings } from './settings'
 
 describe('dates', () => {
   it('numbers the masthead', () => {
@@ -97,6 +98,25 @@ describe('scripture', () => {
     expect(streak(log, today)).toBe(3)
     expect(streak({ ...log, '2026-10-11': true }, today)).toBe(4)
     expect(streak({ '2026-10-01': true }, today)).toBe(0)
+  })
+})
+
+describe('default location', () => {
+  const useStore = (saved: object) => {
+    const store = new Map([['morning:settings', JSON.stringify(saved)]])
+    globalThis.localStorage = { getItem: (k: string) => store.get(k) ?? null, setItem: (k: string, v: string) => void store.set(k, v) } as Storage
+  }
+
+  it('is Elgin, Oklahoma, and moves phones still on the old Brooklyn default', () => {
+    useStore({})
+    expect(loadSettings()).toMatchObject({ city: 'Elgin', lat: 34.782, lon: -98.2923 })
+    useStore({ city: 'Brooklyn', lat: 40.6782, lon: -73.9442, translation: 'web' })
+    expect(loadSettings()).toMatchObject({ city: 'Elgin', lat: 34.782, translation: 'web' })
+  })
+
+  it('keeps a city the owner chose', () => {
+    useStore({ city: 'Lawton', lat: 34.6, lon: -98.4 })
+    expect(loadSettings()).toMatchObject({ city: 'Lawton', lat: 34.6 })
   })
 })
 

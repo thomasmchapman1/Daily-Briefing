@@ -23,9 +23,9 @@ export interface Settings {
 }
 
 export const DEFAULT_SETTINGS: Settings = {
-  city: 'Brooklyn',
-  lat: 40.6782,
-  lon: -73.9442,
+  city: 'Elgin',
+  lat: 34.782,
+  lon: -98.2923,
   useDeviceLocation: true,
   calendarSource: 'google',
   googleCalendars: [],
@@ -37,8 +37,15 @@ export const DEFAULT_SETTINGS: Settings = {
   syncKey: '',
 }
 
+/** The first default city. A phone still saved on it moves to the current default. */
+const OLD_DEFAULT = { city: 'Brooklyn', lat: 40.6782, lon: -73.9442 }
+
 export function loadSettings(): Settings {
-  return { ...DEFAULT_SETTINGS, ...load<Partial<Settings>>('settings', {}) }
+  const settings = { ...DEFAULT_SETTINGS, ...load<Partial<Settings>>('settings', {}) }
+  if (settings.city === OLD_DEFAULT.city && settings.lat === OLD_DEFAULT.lat && settings.lon === OLD_DEFAULT.lon) {
+    Object.assign(settings, { city: DEFAULT_SETTINGS.city, lat: DEFAULT_SETTINGS.lat, lon: DEFAULT_SETTINGS.lon })
+  }
+  return settings
 }
 
 export function useSettings(): [Settings, (next: Settings) => void] {
