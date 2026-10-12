@@ -9,6 +9,8 @@ export const SERIES = 'var(--color-accent-600)'
 export const REFERENCE = 'var(--color-neutral-500)'
 const PLANNED_FILL = 'var(--color-neutral-300)'
 const SURFACE = 'var(--color-bg)'
+/** Half the tooltip's max width (.chart-tip), so it stays inside the chart. */
+const TIP_HALF = 110
 
 function useWidth(fallback = 428) {
   const ref = useRef<HTMLDivElement>(null)
@@ -173,7 +175,7 @@ export function LineChart({ title, series, from, to, unit, digits = 1, height = 
           />
         </svg>
         {hover && hoverRows.length > 0 && (
-          <div className="chart-tip" style={{ left: Math.min(Math.max(x(hover), 70), width - 70) }}>
+          <div className="chart-tip" style={{ left: Math.min(Math.max(x(hover), TIP_HALF), width - TIP_HALF) }}>
             <div className="chart-tip-date">{fmtDate(hover)}</div>
             {hoverRows.map(({ s, p }) => (
               <div key={s.id} className="tnum">
@@ -208,6 +210,8 @@ export interface ColumnDatum {
   /** Marks the current week. */
   current?: boolean
   tip: string
+  /** Extra tooltip line, e.g. where the actual figure came from. */
+  detail?: string
 }
 
 /** Planned (wide, light) with actual (narrow, accent) inside it, one column per week. */
@@ -278,7 +282,7 @@ export function PlanColumns({ title, data, unit, height = 170, legend }: { title
           })}
         </svg>
         {hover != null && (
-          <div className="chart-tip" style={{ left: Math.min(Math.max(m.left + slot * (hover + 0.5), 80), width - 80) }}>
+          <div className="chart-tip" style={{ left: Math.min(Math.max(m.left + slot * (hover + 0.5), TIP_HALF), width - TIP_HALF) }}>
             <div className="chart-tip-date">{data[hover].tip}</div>
             <div className="tnum">
               Planned {data[hover].planned} {unit}
@@ -286,6 +290,7 @@ export function PlanColumns({ title, data, unit, height = 170, legend }: { title
             <div className="tnum">
               Actual {Math.round(data[hover].actual * 10) / 10} {unit}
             </div>
+            {data[hover].detail && <div className="chart-tip-date">{data[hover].detail}</div>}
           </div>
         )}
       </div>

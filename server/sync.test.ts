@@ -1,21 +1,20 @@
 import { describe, expect, it, vi } from 'vitest'
 import { blobStore, handleSync, storeFromEnv, type LogStore } from './sync'
 
-const blob = vi.hoisted(() => ({ stored: null as string | null, etag: 'e1', puts: [] as unknown[] }))
+// A fake Blob store: one document per path, each with its own ETag.
+const blob = vi.hoisted(() => ({ docs: {} as Record<string, { body: string; etag: string }>, n: 1, puts: [] as unknown[] }))
 vi.mock('@vercel/blob', () => {
   class BlobPreconditionFailedError extends Error {}
   return {
     BlobPreconditionFailedError,
-    get: vi.fn(async () =>
-      blob.stored == null
-        ? null
-        : { statusCode: 200, stream: new Response(blob.stored).body, blob: { etag: blob.etag } },
-    ),
-    put: vi.fn(async (_path: string, body: string, opts: { ifMatch?: string }) => {
-      blob.puts.push(opts)
-      if (opts.ifMatch && opts.ifMatch !== blob.etag) throw new BlobPreconditionFailedError()
-      blob.stored = body
-      blob.etag = `e${Number(blob.etag.slice(1)) + 1}`
+    get: vi.fn(async (path: string) => {
+      const doc = blob.docs[path]
+      return doc ? { statusCode: 200, stream: new Response(doc.body).body, blob: { etag: doc.etag } } : null
+    }),
+    put: vi.fn(async (path: string, body: string, opts: { ifMatch?: string }) => {
+      blob.puts.push({ path, ...opts })
+      if (opts.ifMatch && opts.ifMatch !== blob.docs[path]?.etag) throw new BlobPreconditionFailedError()
+      blob.docs[path] = { body, etag: `e${++blob.n}` }
       return {}
     }),
   }
@@ -74,12 +73,13 @@ describe('sync with Vercel Blob', () => {
       expect(storeFromEnv()).not.toBeNull()
       const out = await handleSync('POST', 'k', { log: { '2026-10-13': { updatedAt: 2 } } })
       expect(out.status).toBe(200)
-      expect(blob.puts.at(-1)).toMatchObject({ access: 'private', addRandomSuffix: false, allowOverwrite: true })
-      expect(JSON.parse(blob.stored!)).toEqual({ '2026-10-13': { updatedAt: 2 } })
+      expect(blob.puts.at(-1)).toMatchObject({ path: 'training/log.json', access: 'private', addRandomSuffix: false, allowOverwrite: true })
+      expect(JSON.parse(blob.docs['training/log.json'].body)).toEqual({ '2026-10-13': { updatedAt: 2 } })
       // A second write is conditional on the version just read.
+      const etag = blob.docs['training/log.json'].etag
       await handleSync('POST', 'k', { log: { '2026-10-14': { updatedAt: 3 } } })
-      expect(blob.puts.at(-1)).toMatchObject({ ifMatch: 'e2' })
-      expect(Object.keys(JSON.parse(blob.stored!))).toEqual(['2026-10-13', '2026-10-14'])
+      expect(blob.puts.at(-1)).toMatchObject({ ifMatch: etag })
+      expect(Object.keys(JSON.parse(blob.docs['training/log.json'].body))).toEqual(['2026-10-13', '2026-10-14'])
     } finally {
       delete process.env.BLOB_READ_WRITE_TOKEN
       delete process.env.SYNC_KEY
@@ -90,7 +90,7 @@ describe('sync with Vercel Blob', () => {
     process.env.BLOB_STORE_ID = 'store_abc'
     try {
       expect(storeFromEnv()).not.toBeNull()
-      await blobStore().write({}, null)
+      await blobStore().write('log', {}, null)
       expect(blob.puts.at(-1)).not.toHaveProperty('token')
     } finally {
       delete process.env.BLOB_STORE_ID
@@ -99,16 +99,17 @@ describe('sync with Vercel Blob', () => {
 
   it('reports a write conflict as false', async () => {
     const store = blobStore('t')
-    expect(await store.write({}, 'stale')).toBe(false)
+    expect(await store.write('log', {}, 'stale')).toBe(false)
   })
 
   it('re-merges when another device wrote in between', async () => {
-    let held: Record<string, { updatedAt: number }> = { a: { updatedAt: 1 } }
+    let held: Record<string, unknown> = { '2026-10-01': { updatedAt: 1 } }
     let version = 1
     let raced = false
     const store: LogStore = {
-      read: async () => ({ log: held, version: String(version) }),
-      write: async (log, v) => {
+      read: async (doc) => (doc === 'log' ? { data: held, version: String(version) } : { data: {}, version: null }),
+      write: async (doc, log, v) => {
+        if (doc !== 'log') return true
         if (!raced) {
           // Another device lands a day between our read and our write.
           raced = true
@@ -125,8 +126,43 @@ describe('sync with Vercel Blob', () => {
     try {
       const out = await handleSync('POST', 'k', { log: { '2026-10-16': { updatedAt: 6 } } }, store)
       expect(out.status).toBe(200)
-      expect(Object.keys(held).sort()).toEqual(['2026-10-15', '2026-10-16', 'a'])
+      expect(Object.keys(held).sort()).toEqual(['2026-10-01', '2026-10-15', '2026-10-16'])
     } finally {
+      delete process.env.SYNC_KEY
+    }
+  })
+})
+
+describe('Garmin weeks', () => {
+  const week = (weekStart: string, miles: number, importedAt = 1) => ({ weekStart, runs: 1, miles, seconds: 2276, restingHr: 70, importedAt })
+
+  it('stores imported weeks beside the log, and importing a week again replaces it', async () => {
+    process.env.BLOB_STORE_ID = 'store_abc'
+    process.env.SYNC_KEY = 'k'
+    try {
+      await handleSync('POST', 'k', { garmin: [week('2026-09-28', 4.01), week('2026-10-05', 3)] })
+      const again = await handleSync('POST', 'k', { garmin: [week('2026-10-05', 6.2, 2)] })
+      expect(again.status).toBe(200)
+      const garmin = (again.json as { garmin: Record<string, { miles: number }> }).garmin
+      expect(Object.keys(garmin).sort()).toEqual(['2026-09-28', '2026-10-05'])
+      expect(garmin['2026-10-05'].miles).toBe(6.2)
+      // The daily log is untouched by a Garmin import.
+      const got = await handleSync('GET', 'k', null)
+      expect((got.json as { log: object }).log).not.toHaveProperty('2026-10-05')
+    } finally {
+      delete process.env.BLOB_STORE_ID
+      delete process.env.SYNC_KEY
+    }
+  })
+
+  it('rejects weeks that aren’t in the expected shape', async () => {
+    process.env.BLOB_STORE_ID = 'store_abc'
+    process.env.SYNC_KEY = 'k'
+    try {
+      expect((await handleSync('POST', 'k', { garmin: [{ weekStart: 'Oct 5', miles: 3 }] })).status).toBe(400)
+      expect((await handleSync('POST', 'k', {})).status).toBe(400)
+    } finally {
+      delete process.env.BLOB_STORE_ID
       delete process.env.SYNC_KEY
     }
   })

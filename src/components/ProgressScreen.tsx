@@ -2,7 +2,8 @@ import { useMemo, useRef, useState } from 'react'
 import { addDays, daysBetween, fromIsoDate, isoDate } from '../lib/date'
 import { BODY_FIELDS, BODY_LABELS, formatDuration, formatPace, isValidLog, type FitnessLog } from '../fitness/log'
 import { LIFT_NAMES, PLAN, PLAN_START, PLAN_WEEKS, RACE_DAY, getSession, weekOf, type LiftId } from '../fitness/plan'
-import { bodySeries, latest, liftHistory, movingAverage, nutritionAdvice, plannedWeight, runHistory, weeklyLoss, weeklyMiles } from '../fitness/stats'
+import type { GarminWeeks } from '../fitness/merge'
+import { bodySeries, garminRestingHr, latest, liftHistory, movingAverage, nutritionAdvice, plannedWeight, runHistory, weeklyLoss, weeklyMiles } from '../fitness/stats'
 import type { SyncStatus } from '../fitness/useFitnessLog'
 import { Legend, LineChart, PlanColumns } from './charts'
 import { Sheet } from './Sheet'
@@ -10,6 +11,7 @@ import { Sheet } from './Sheet'
 interface Props {
   today: Date
   log: FitnessLog
+  garmin: GarminWeeks
   goalWeight: number
   goalWaist: number
   sync: SyncStatus
@@ -119,7 +121,7 @@ function syncText(sync: SyncStatus): string {
   }
 }
 
-export function ProgressScreen({ today, log, goalWeight, goalWaist, sync, onSyncNow, onImport, onClose }: Props) {
+export function ProgressScreen({ today, log, garmin, goalWeight, goalWaist, sync, onSyncNow, onImport, onClose }: Props) {
   const [liftId, setLiftId] = useState<LiftId>('squat')
   const [importMsg, setImportMsg] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
@@ -129,7 +131,10 @@ export function ProgressScreen({ today, log, goalWeight, goalWaist, sync, onSync
   const avg = useMemo(() => movingAverage(weights), [weights])
   const waists = useMemo(() => bodySeries(log, 'waist'), [log])
   const runs = useMemo(() => runHistory(log), [log])
-  const miles = useMemo(() => weeklyMiles(log), [log])
+  const miles = useMemo(() => weeklyMiles(log, garmin), [log, garmin])
+  const restingWeekly = useMemo(() => garminRestingHr(garmin), [garmin])
+  const restingDaily = useMemo(() => bodySeries(log, 'restingHr'), [log])
+  const garminWeeks = useMemo(() => Object.values(garmin).sort((a, b) => b.weekStart.localeCompare(a.weekStart)), [garmin])
   const advice = nutritionAdvice(weights, today)
   const rate = weeklyLoss(weights, today)
 
@@ -225,6 +230,24 @@ export function ProgressScreen({ today, log, goalWeight, goalWaist, sync, onSync
             { id: 'waist', label: 'Waist', points: waists, style: 'line' },
           ]}
         />
+        {(restingWeekly.length > 0 || restingDaily.length > 0) && (
+          <LineChart
+            title="Resting heart rate (bpm)"
+            from={[restingWeekly[0]?.date, restingDaily[0]?.date, CHART_FROM].filter(Boolean).sort()[0]!}
+            to={chartTo}
+            unit="bpm"
+            digits={0}
+            legend={
+              restingWeekly.length > 0 && restingDaily.length > 0 ? (
+                <Legend items={[{ label: 'Garmin weekly average', kind: 'line' }, { label: 'Your check-ins', kind: 'dot' }]} />
+              ) : undefined
+            }
+            series={[
+              { id: 'daily', label: 'Check-in', points: restingDaily, style: 'dots' },
+              { id: 'garmin', label: 'Garmin week avg', points: restingWeekly, style: 'line' },
+            ]}
+          />
+        )}
       </section>
 
       <section className="section">
@@ -297,8 +320,15 @@ export function ProgressScreen({ today, log, goalWeight, goalWaist, sync, onSync
             actual: w.actual,
             current: w.week === week,
             tip: `Week ${w.week} · ${fmt(w.start)}`,
+            detail:
+              w.garmin != null
+                ? `Logged ${Math.round(w.logged * 10) / 10} · Garmin ${w.garmin} (counted once)`
+                : w.logged
+                  ? 'From your logged runs'
+                  : undefined,
           }))}
         />
+        <p className="fine">Each week counts the larger of your logged runs and Garmin’s weekly total, so a run recorded in both places is counted once.</p>
         {runs.length > 0 && (
           <table className="data-table tnum">
             <thead>
@@ -327,6 +357,37 @@ export function ProgressScreen({ today, log, goalWeight, goalWaist, sync, onSync
           </table>
         )}
       </section>
+
+      {garminWeeks.length > 0 && (
+        <section className="section">
+          <div className="kicker-row">
+            <span className="kicker">Garmin weekly reports</span>
+            <span className="kicker-meta">Imported from your email</span>
+          </div>
+          <table className="data-table tnum">
+            <thead>
+              <tr>
+                <th>Week of</th>
+                <th>Runs</th>
+                <th>Miles</th>
+                <th>Pace</th>
+                <th>Resting HR</th>
+              </tr>
+            </thead>
+            <tbody>
+              {garminWeeks.slice(0, 12).map((w) => (
+                <tr key={w.weekStart}>
+                  <td>{fmt(w.weekStart)}</td>
+                  <td>{w.runs || '—'}</td>
+                  <td>{w.miles || '—'}</td>
+                  <td>{formatPace(w.miles, w.seconds)?.replace(' /mi', '') ?? '—'}</td>
+                  <td>{w.restingHr ?? '—'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+      )}
 
       <section className="section">
         <div className="kicker-row">

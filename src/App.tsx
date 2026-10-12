@@ -91,6 +91,7 @@ export default function App() {
         <ProgressScreen
           today={today}
           log={fitness.log}
+          garmin={fitness.garmin}
           goalWeight={settings.goalWeight}
           goalWaist={settings.goalWaist}
           sync={fitness.sync}

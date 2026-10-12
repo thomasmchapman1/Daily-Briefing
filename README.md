@@ -91,6 +91,8 @@ The log is saved on the device. To sync it between devices and keep it safe if S
 2. **Settings → Environment Variables**: add `SYNC_KEY`, a passphrase of your choice.
 3. Redeploy. In the app, open settings and enter the same passphrase as the **Training log sync passcode** on each device.
 
+**Garmin.** Garmin emails weekly reports (runs and miles, average resting heart rate). A weekly job can import them through the same endpoint (`POST /api/sync` with `{ garmin: [...] }`). They're stored beside the daily log in their own document, keyed by the week's Monday, so importing a week again replaces it. Weekly miles count the larger of your logged runs and Garmin's total, so a run recorded in both is counted once. Imported weeks appear on the progress page with a resting heart rate chart.
+
 Sync runs when the app opens, when it returns to the foreground, and shortly after each edit (`POST /api/sync`, `server/sync.ts`). Days merge by last edit, and Blob writes are conditional, so two devices syncing at once can't overwrite each other's days.
 
 ## Notes and open items
