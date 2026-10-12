@@ -204,14 +204,45 @@ export function SettingsScreen({ settings, weatherSource, googleResult, onSave, 
             />
           )}
         </Field>
-        <Field label="Training programme start" hint="Week 1, Day 1 of the training programme.">
+        <span className="field-row">
+          <Field label="Goal weight (lb)">
+            {(id) => (
+              <input
+                id={id}
+                className="input tnum"
+                type="number"
+                inputMode="decimal"
+                value={draft.goalWeight}
+                onChange={(e) => e.target.value && set('goalWeight', Number(e.target.value))}
+              />
+            )}
+          </Field>
+          <Field label="Goal waist (in)">
+            {(id) => (
+              <input
+                id={id}
+                className="input tnum"
+                type="number"
+                inputMode="decimal"
+                step="0.5"
+                value={draft.goalWaist}
+                onChange={(e) => e.target.value && set('goalWaist', Number(e.target.value))}
+              />
+            )}
+          </Field>
+        </span>
+        <Field
+          label="Training log sync passcode"
+          hint="Leave empty to keep your training log on this device only. To sync it between devices, set up cloud sync in Vercel (see the README) and enter the same SYNC_KEY here on each device."
+        >
           {(id) => (
             <input
               id={id}
               className="input"
-              type="date"
-              value={draft.programStart}
-              onChange={(e) => e.target.value && set('programStart', e.target.value)}
+              type="password"
+              autoComplete="off"
+              value={draft.syncKey}
+              onChange={(e) => set('syncKey', e.target.value.trim())}
             />
           )}
         </Field>

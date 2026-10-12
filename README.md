@@ -1,6 +1,6 @@
 # The Morning Briefing
 
-A personal morning briefing laid out like a newspaper: **Weather**, **The Day** (calendar), **Scripture** and **Training** on one scrolling page. It's an installable PWA for iPhone. The design spec is in [`docs/HANDOFF.md`](docs/HANDOFF.md) (option 1a, "The Morning Paper"). The prototype is in [`docs/design/`](docs/design/).
+A personal morning briefing laid out like a newspaper: **Weather**, **The Day** (calendar), **Scripture**, **Training** and a daily **Check-in** on one scrolling page, plus a **Progress** page for the OKC Marathon 2027 plan. It's an installable PWA for iPhone. The design spec is in [`docs/HANDOFF.md`](docs/HANDOFF.md) (option 1a, "The Morning Paper"). The prototype is in [`docs/design/`](docs/design/).
 
 Built with Vite, React and TypeScript, plain CSS, and `vite-plugin-pwa`. Calendar parsing runs in one small serverless function.
 
@@ -9,7 +9,7 @@ Built with Vite, React and TypeScript, plain CSS, and `vite-plugin-pwa`. Calenda
 ```sh
 npm install
 npm run dev        # http://localhost:5173. /api/ics is served by the Vite dev server
-npm test           # unit tests (ICS parsing, scripture, weather, workout)
+npm test           # unit tests (ICS parsing, scripture, weather, training plan, stats, sync)
 npm run build      # typecheck + production build into dist/
 npm run preview    # serve the build, including the service worker and /api/ics
 ```
@@ -26,9 +26,11 @@ Tap the masthead title (**The Morning Briefing**) to open settings:
 
 - **City**: shown on the masthead. Weather uses it when device location is off or denied. "Look up" geocodes it with Open-Meteo.
 - **Calendar**: either **Google Calendar** (sign in with Google, then choose which calendars to show; this needs the one-time setup below) or an **iCal link** (a private ICS link from Google or iCloud; `webcal://…` links work too).
-- **Translation**, **personal worship link** (defaults to familyworship.io; empty hides the links), **training programme start**.
+- **Translation**, **personal worship link** (defaults to familyworship.io; empty hides the links).
+- **Goal weight** and **goal waist** (180 lb and 32 in), shown on the progress page.
+- **Training log sync passcode**: see *Training log and cloud sync* below.
 
-Settings, read history, workout ticks and the last briefing are kept in `localStorage` under the `morning:` prefix.
+Settings, read history, the training log and the last briefing are kept in `localStorage` under the `morning:` prefix.
 
 ## How it works
 
@@ -37,7 +39,8 @@ Settings, read history, workout ticks and the last briefing are kept in `localSt
 | Weather | [Open-Meteo](https://open-meteo.com) (°F, mph, no key). Summary sentence generated in `src/weather/summary.ts`. |
 | The Day | Google Calendar API, read-only: `api/google/*` → `server/google.ts`. Or an ICS link → `POST /api/ics` (`api/ics.ts` → `server/icsEvents.ts`, using `ical.js`). It expands recurring events, exceptions and time zones, and returns only today's events. The private link goes in the request body, not the URL. |
 | Scripture | `src/scripture/`: a verse of the day from `plans/verse-a-day.json`, with text from [bible-api.com](https://bible-api.com) (KJV by default). The reference and the **Personal worship** button open the worship link. |
-| Training | `src/workout/program.json` (`weeks[] → days[] → { title, minutes, exercises[] }`). The current week and day count from the programme start date and loop at the end. A day with no exercises is a rest day. |
+| Training | `src/fitness/plan.ts`: the 28-week OKC Marathon plan (12 Oct 2026 to race day, 25 Apr 2027) with every week's lifting weights and runs. Mon lower-body lift, Tue easy run, Wed upper-body lift, Thu quality run, Sat long run, Fri and Sun off. Cutback weeks, the peak and the taper set the number of sets. |
+| Check-in, Progress | `src/fitness/`: the daily log (`log.ts`), averages, rates, estimated maxes and mileage (`stats.ts`), and storage plus sync (`useFitnessLog.ts`). |
 
 Loading is stale-while-revalidate. The last cached briefing shows instantly, and skeleton rows appear only on the very first load. Each section fails on its own. The app refreshes on pull-down, when it returns to the foreground after 30 minutes, and at local midnight. Read state and exercise ticks are keyed by date, so a new day starts fresh. The service worker precaches the app shell and the self-hosted fonts for offline opening.
 
@@ -66,6 +69,29 @@ The Scripture section shows one verse a day and sends you to your worship site (
 - `providers/`: implement `TextProvider.fetchPassage(ref, translation)` (for example for api.esv.org or API.Bible) and add it to `PROVIDERS` in `providers/index.ts`. Its translations then show up in settings.
 - `history.ts`: the done log and streak.
 - `ScriptureSection.tsx`: the layout.
+
+## Training log and cloud sync
+
+**Training** shows the day's session from the plan. Tap the circle to tick off a lift or run: blank sets fill in with the planned numbers. Tap the name to open warm-up sets, last time's numbers, and fields for each set's weight and reps (or a run's distance, time, heart rate and effort; pace is calculated). The arrows next to the date move to other days, so you can log something late or look ahead.
+
+**Check-in** records weight, waist, body fat, sleep, resting heart rate, calories, protein and notes for the same day.
+
+**Progress & plan** (the button under Training) shows:
+- weight with a 7-day average against the plan's line and your goal
+- waist against the plan's milestones
+- weekly rate of loss, with the plan's calorie rules (under 0.3 lb a week for three weeks: trim 150–200 kcal; over 1 lb a week: eat more)
+- estimated 1-rep maxes against your starting maxes and targets
+- miles per week, planned against actual, and recent runs
+- this week's schedule and the milestones
+- backup (JSON), CSV export and restore
+
+The log is saved on the device. To sync it between devices and keep it safe if Safari's data is cleared:
+
+1. In Vercel, open the project → **Storage** → **Create Database** → **Upstash Redis** (free plan) → connect it to this project. This adds `KV_REST_API_URL` and `KV_REST_API_TOKEN`.
+2. **Settings → Environment Variables**: add `SYNC_KEY`, a passphrase of your choice.
+3. Redeploy. In the app, open settings and enter the same passphrase as the **Training log sync passcode** on each device.
+
+Sync runs when the app opens, when it returns to the foreground, and shortly after each edit (`POST /api/sync`, `server/sync.ts`). Days merge by last edit, so two devices can't overwrite each other's different days.
 
 ## Notes and open items
 

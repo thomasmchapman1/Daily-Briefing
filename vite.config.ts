@@ -3,18 +3,32 @@ import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 import { handleGoogle } from './server/google.ts'
 import { IcsError, handleIcsRequest } from './server/icsEvents.ts'
+import { handleSync } from './server/sync.ts'
 
 // Serves /api/* during `vite dev` / `vite preview`, mirroring the Vercel functions in api/.
 function localApi(): Plugin {
   const middleware = (req: any, res: any, next: () => void) => {
     const google = req.url?.match(/^\/api\/google\/([a-z]+)/)
     if (google) return void handleGoogle(google[1], req, res)
-    if (!req.url?.startsWith('/api/ics')) return next()
     const send = (status: number, body: unknown) => {
       res.statusCode = status
       res.setHeader('Content-Type', 'application/json')
       res.end(JSON.stringify(body))
     }
+    if (req.url?.startsWith('/api/sync')) {
+      let raw = ''
+      req.on('data', (chunk: Buffer) => (raw += chunk))
+      req.on('end', async () => {
+        try {
+          const out = await handleSync(req.method, req.headers['x-sync-key'], raw ? JSON.parse(raw) : null)
+          send(out.status, out.json)
+        } catch {
+          send(500, { error: 'Sync failed' })
+        }
+      })
+      return
+    }
+    if (!req.url?.startsWith('/api/ics')) return next()
     if (req.method !== 'POST') return send(405, { error: 'Method not allowed' })
     let raw = ''
     req.on('data', (chunk: Buffer) => (raw += chunk))
@@ -45,7 +59,7 @@ export default defineConfig({
       manifest: {
         name: 'The Morning Briefing',
         short_name: 'The Morning',
-        description: 'A personal morning briefing.',
+        description: 'A personal morning briefing and training log.',
         display: 'standalone',
         start_url: '/',
         scope: '/',

@@ -6,7 +6,6 @@ import { splitReference } from './scripture/refs'
 import type { Passage } from './scripture/types'
 import { firstHourIndex, toForecast, type OpenMeteo } from './weather/api'
 import { compass } from './weather/summary'
-import { getWorkout } from './workout'
 
 describe('dates', () => {
   it('numbers the masthead', () => {
@@ -98,16 +97,6 @@ describe('scripture', () => {
     expect(streak(log, today)).toBe(3)
     expect(streak({ ...log, '2026-10-11': true }, today)).toBe(4)
     expect(streak({ '2026-10-01': true }, today)).toBe(0)
-  })
-})
-
-describe('workout', () => {
-  it('computes week and day from the start date', () => {
-    const w = getWorkout(new Date(2026, 9, 11), '2026-09-04')
-    expect([w.week, w.day, w.title, w.exercises.length]).toEqual([6, 3, 'Lower body', 4])
-    expect(w.exercises[0].spec).toBe('4 × 6 · 185 lb')
-    expect(getWorkout(new Date(2026, 9, 12), '2026-09-04').rest).toBe(false)
-    expect(getWorkout(new Date(2026, 9, 10), '2026-09-04').rest).toBe(true)
   })
 })
 
