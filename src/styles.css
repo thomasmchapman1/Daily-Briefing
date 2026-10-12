@@ -106,7 +106,9 @@ button {
   text-align: center;
   font-family: var(--font-heading);
   font-weight: 400;
-  font-size: 44px;
+  /* "The Morning Briefing" is ~8.5em wide: scale it to fit the column (38px at 390pt), up to 44px. */
+  font-size: min(44px, calc((min(100vw, 480px) - 2 * var(--gutter)) / 8.8));
+  white-space: nowrap;
   line-height: 1;
   margin: 6px 0 4px;
 }
@@ -258,6 +260,11 @@ button {
   font-size: 24px;
   line-height: 1.15;
   margin: 8px 0 2px;
+}
+
+a.scripture-ref {
+  color: inherit;
+  text-decoration: none;
 }
 
 .scripture-quote {
@@ -461,38 +468,6 @@ select.input {
   font-family: var(--font-heading);
   font-weight: 600;
   font-size: 20px;
-}
-
-.reader-heading {
-  font-family: var(--font-heading);
-  font-weight: 600;
-  font-size: 24px;
-  line-height: 1.15;
-  margin: 22px 0 10px;
-}
-
-.reader-text {
-  font-family: var(--font-heading);
-  font-size: 21px;
-  line-height: 1.42;
-  text-align: justify;
-  text-wrap: pretty;
-  hyphens: auto;
-  margin: 0;
-}
-
-.reader-text sup {
-  font-family: var(--font-body);
-  font-size: 10px;
-  color: var(--color-accent-700);
-  margin-right: 2px;
-  font-variant-numeric: tabular-nums;
-}
-
-.reader-foot {
-  margin-top: 22px;
-  font-size: 12px;
-  color: var(--color-neutral-700);
 }
 
 /* ---------- Skeleton (first load only) ---------- */

@@ -4,6 +4,9 @@ import { summarize } from './summary'
 
 // Raw Open-Meteo response (only the fields we request).
 export interface OpenMeteo {
+  latitude?: number
+  longitude?: number
+  timezone?: string
   current: {
     time: string
     temperature_2m: number
@@ -76,8 +79,13 @@ export function toForecast(data: OpenMeteo): Forecast {
   }
 }
 
-export async function getForecast(lat: number, lon: number, signal?: AbortSignal): Promise<Forecast> {
-  return toForecast(await fetchOpenMeteo(lat, lon, signal))
+export async function getForecast(
+  lat: number,
+  lon: number,
+  signal?: AbortSignal,
+): Promise<{ forecast: Forecast; grid: { lat?: number; lon?: number; timezone?: string } }> {
+  const data = await fetchOpenMeteo(lat, lon, signal)
+  return { forecast: toForecast(data), grid: { lat: data.latitude, lon: data.longitude, timezone: data.timezone } }
 }
 
 /** Look up a city name with Open-Meteo's free geocoder. */

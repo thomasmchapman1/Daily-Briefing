@@ -9,7 +9,6 @@
     "preview": "vite preview",
     "test": "vitest run",
     "typecheck": "tsc -b",
-    "gen:plan": "node scripts/gen-plan.mjs",
     "gen:icons": "node scripts/gen-icons.mjs"
   },
   "dependencies": {

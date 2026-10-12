@@ -9,7 +9,7 @@ interface Props {
   children: ReactNode
 }
 
-/** Full-screen overlay used by the reader and settings. */
+/** Full-screen overlay used by settings. */
 export function Sheet({ label, aside, onClose, children }: Props) {
   const closeRef = useRef<HTMLButtonElement>(null)
   const onCloseRef = useRef(onClose)

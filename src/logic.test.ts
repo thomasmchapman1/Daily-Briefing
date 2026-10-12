@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
+import { issueLabel } from './components/Masthead'
 import { dayOfYear, toRoman, clockTime } from './lib/date'
-import { buildToday, getPlanDay, streak } from './scripture'
+import { buildToday, dailyVerseSettings, displayReference, getPlanDay, streak } from './scripture'
+import { splitReference } from './scripture/refs'
 import type { Passage } from './scripture/types'
 import { firstHourIndex, toForecast, type OpenMeteo } from './weather/api'
 import { compass } from './weather/summary'
@@ -15,13 +17,60 @@ describe('dates', () => {
   })
 })
 
-describe('scripture', () => {
-  const settings = { plan: 'default-365', planStart: '2026-01-01', translation: 'kjv' }
+describe('masthead issue numbers', () => {
+  it('starts at Vol. I, No. 1 on 12 October 2026', () => {
+    expect(issueLabel(new Date(2026, 9, 11))).toBe('Vol. I · Preview')
+    expect(issueLabel(new Date(2026, 9, 12))).toBe('Vol. I · No. 1')
+    expect(issueLabel(new Date(2026, 9, 13))).toBe('Vol. I · No. 2')
+    expect(issueLabel(new Date(2027, 9, 11))).toBe('Vol. I · No. 365')
+    expect(issueLabel(new Date(2027, 9, 12))).toBe('Vol. II · No. 366')
+  })
+})
 
-  it('maps a date to a plan day', () => {
-    expect(getPlanDay(new Date(2026, 9, 11), settings).planDay).toBe(284)
-    expect(getPlanDay(new Date(2027, 0, 1), settings).planDay).toBe(1)
-    expect(getPlanDay(new Date(2026, 0, 1), settings).references).toEqual(['Psalm 1', 'Matthew 1'])
+describe('scripture', () => {
+  const verse = (y: number, m: number, d: number) => getPlanDay(new Date(y, m, d), dailyVerseSettings(new Date(y, m, d), 'kjv'))
+
+  it('picks the verse by calendar date, every year', () => {
+    expect(verse(2026, 0, 1).references).toEqual(['Genesis 1:1'])
+    expect(verse(2026, 11, 25).references).toEqual(['Luke 2:11'])
+    expect(verse(2027, 11, 31).references).toEqual(['Revelation 22:20'])
+    expect(verse(2028, 11, 25).references).toEqual(['Luke 2:11'])
+    expect(verse(2026, 9, 12).planDay).toBe(285)
+  })
+
+  it('repeats 28 February on 29 February', () => {
+    expect(verse(2028, 1, 29).references).toEqual(verse(2028, 1, 28).references)
+    expect(verse(2028, 2, 1).references).toEqual(verse(2026, 2, 1).references)
+  })
+
+  it('shows a verse of the day in full', () => {
+    const passage: Passage = {
+      reference: 'Romans 8:38–39',
+      book: 'Romans',
+      translation: 'KJV',
+      verses: [
+        { chapter: 8, verse: 38, text: 'For I am persuaded, that neither death, nor life, nor angels, nor principalities, nor powers, nor things present, nor things to come,' },
+        { chapter: 8, verse: 39, text: 'Nor height, nor depth, nor any other creature, shall be able to separate us from the love of God, which is in Christ Jesus our Lord.' },
+      ],
+    }
+    const today = buildToday(1, ['Romans 8:38–39'], [passage], 'verse')
+    expect(today.excerpt.endsWith('Christ Jesus our Lord.')).toBe(true)
+    expect(today.attribution).toBe('Romans 8:38–39 · KJV')
+    expect(verse(2026, 0, 1).kind).toBe('verse')
+  })
+
+  it('names a single psalm "Psalm"', () => {
+    expect(displayReference('Psalms 23:1')).toBe('Psalm 23:1')
+    expect(displayReference('Psalms 121:1–2')).toBe('Psalm 121:1–2')
+    expect(displayReference('Psalms 99–101')).toBe('Psalms 99–101')
+    expect(displayReference('John 3:16')).toBe('John 3:16')
+  })
+
+  it('splits references into fetchable pieces', () => {
+    expect(splitReference('Psalms 52–54')).toEqual(['Psalms 52', 'Psalms 53', 'Psalms 54'])
+    expect(splitReference('Exodus 11; Exodus 12:1–21')).toEqual(['Exodus 11', 'Exodus 12:1-21'])
+    expect(splitReference('Luke 1:39–80')).toEqual(['Luke 1:39-80'])
+    expect(splitReference('Song of Solomon 3')).toEqual(['Song of Solomon 3'])
   })
 
   it('builds excerpt and attribution', () => {

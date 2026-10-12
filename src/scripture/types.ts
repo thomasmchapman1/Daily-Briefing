@@ -12,6 +12,14 @@ export interface ScriptureSettings {
 export interface ReadingPlan {
   id: string
   name: string
+  about?: string
+  /** "reading" (default): passages to read, shown as an excerpt. "verse": one verse a day, shown in full. */
+  kind?: 'reading' | 'verse'
+  /**
+   * "repeat": the plan follows the calendar (day 1 = 1 January in a common
+   * year), so 29 February repeats the day before and 31 December stays last.
+   */
+  leapDay?: 'repeat'
   /** Day number (1-based, as a string key) → passage references. */
   days: Record<string, string[]>
 }
@@ -34,14 +42,15 @@ export interface Passage {
 
 /** Result of getToday(): everything the Scripture section renders. */
 export interface ScriptureToday {
+  kind: 'reading' | 'verse'
   planDay: number
   references: string[]
-  /** First 2–3 verses of the first passage, whitespace-normalised, no quotes. */
+  /** Reading: first 2–3 verses of the first passage. Verse: the whole verse. Whitespace-normalised, no quotes. */
   excerpt: string
-  /** e.g. "Psalm 23:1–3 · KJV · about 6 min" */
+  /** e.g. "Psalm 23:1–3 · KJV · about 6 min", or "John 3:16 · KJV" for a verse */
   attribution: string
   minutes: number
-  /** Full text of every reference, for the reader view. */
+  /** Full text of every reference. */
   passages: Passage[]
 }
 

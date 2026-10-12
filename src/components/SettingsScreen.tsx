@@ -1,11 +1,17 @@
 import { useId, useState, type ReactNode } from 'react'
-import { PLANS, allTranslations } from '../scripture'
+import { allTranslations } from '../scripture'
 import type { Settings } from '../settings'
+import { connectGoogle } from '../calendar/api'
 import { geocodeCity } from '../weather/api'
+import { GoogleCalendarPicker } from './GoogleCalendarPicker'
+import type { WeatherSource } from '../weather/types'
 import { Sheet } from './Sheet'
 
 interface Props {
   settings: Settings
+  weatherSource: WeatherSource | null
+  /** Set right after returning from Google sign-in: connected | cancelled | failed. */
+  googleResult: string | null
   onSave: (next: Settings) => void
   onClose: () => void
 }
@@ -22,7 +28,51 @@ function Field({ label, hint, children }: { label: string; hint?: ReactNode; chi
   )
 }
 
-export function SettingsScreen({ settings, onSave, onClose }: Props) {
+const REASONS: Record<NonNullable<WeatherSource['reason']>, string> = {
+  off: 'device location is turned off above',
+  unsupported: 'this browser can’t share location',
+  denied: 'location permission was denied',
+  unavailable: 'the phone couldn’t get a location fix',
+  timeout: 'the phone took too long to find its location',
+}
+
+const coord = (n: number, digits = 4) => n.toFixed(digits).replace('-', '−')
+
+/** Shows where the last forecast's coordinates came from, so the weather can be checked. */
+function WeatherSourceInfo({ source, city }: { source: WeatherSource | null; city: string }) {
+  if (!source) return <span className="field-hint">No forecast has loaded yet.</span>
+  const { lat, lon } = source
+  const map = `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=12/${lat}/${lon}`
+  const updated = new Date(source.fetchedAt).toLocaleString([], { weekday: 'short', hour: 'numeric', minute: '2-digit' })
+  return (
+    <span className="field-hint" style={{ marginTop: 0 }}>
+      {source.from === 'device' ? (
+        <>
+          From this device’s location: {coord(lat)}, {coord(lon)}
+          {source.accuracy != null && ` (within ${Math.round(source.accuracy)} m)`}.
+        </>
+      ) : (
+        <>
+          From the saved city, {city}: {coord(lat)}, {coord(lon)}. Device location wasn’t used because{' '}
+          {REASONS[source.reason ?? 'off']}.
+        </>
+      )}{' '}
+      <a href={map} target="_blank" rel="noreferrer">
+        Show on map
+      </a>
+      <br />
+      {source.gridLat != null && source.gridLon != null && (
+        <>
+          Open-Meteo grid point {coord(source.gridLat, 2)}, {coord(source.gridLon, 2)}
+          {source.timezone && ` · ${source.timezone}`} ·{' '}
+        </>
+      )}
+      updated {updated}.
+    </span>
+  )
+}
+
+export function SettingsScreen({ settings, weatherSource, googleResult, onSave, onClose }: Props) {
   const [draft, setDraft] = useState(settings)
   const [lookup, setLookup] = useState<string | null>(null)
   const set = <K extends keyof Settings>(key: K, value: Settings[K]) => setDraft((d) => ({ ...d, [key]: value }))
@@ -68,41 +118,65 @@ export function SettingsScreen({ settings, onSave, onClose }: Props) {
             Use this device’s location for weather
           </label>
         </div>
-        <Field
-          label="Calendar link (iCal)"
-          hint="Google Calendar: Settings → your calendar → Secret address in iCal format. iCloud: share the calendar publicly and copy the link."
-        >
-          {(id) => (
-            <input
-              id={id}
-              className="input"
-              type="url"
-              inputMode="url"
-              placeholder="https://calendar.google.com/calendar/ical/…/basic.ics"
-              value={draft.icsUrl}
-              onChange={(e) => set('icsUrl', e.target.value.trim())}
-              autoCapitalize="off"
-              autoCorrect="off"
-              spellCheck={false}
+        <div className="field">
+          <label>Last forecast came from</label>
+          <WeatherSourceInfo source={weatherSource} city={settings.city} />
+        </div>
+        <div className="field">
+          <label>Calendar</label>
+          <div className="seg" role="radiogroup" aria-label="Calendar source" style={{ alignSelf: 'flex-start' }}>
+            {(
+              [
+                ['google', 'Google Calendar'],
+                ['ics', 'iCal link'],
+              ] as const
+            ).map(([value, text]) => (
+              <label key={value} className="seg-opt">
+                <input
+                  type="radio"
+                  name="calendar-source"
+                  checked={draft.calendarSource === value}
+                  onChange={() => set('calendarSource', value)}
+                />
+                {text}
+              </label>
+            ))}
+          </div>
+        </div>
+        {draft.calendarSource === 'google' ? (
+          <div className="field" style={{ display: 'flex', flexDirection: 'column' }}>
+            <label>Google Calendar</label>
+            <GoogleCalendarPicker
+              selected={draft.googleCalendars}
+              onChange={(ids) => set('googleCalendars', ids)}
+              result={googleResult}
+              onConnect={() => {
+                onSave({ ...draft, calendarSource: 'google' })
+                connectGoogle()
+              }}
             />
-          )}
-        </Field>
-        <Field label="Reading plan">
-          {(id) => (
-            <select id={id} className="input" value={draft.plan} onChange={(e) => set('plan', e.target.value)}>
-              {Object.values(PLANS).map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
-          )}
-        </Field>
-        <Field label="Plan start date" hint="Day 1 of the reading plan. Your streak is kept if you change this.">
-          {(id) => (
-            <input id={id} className="input" type="date" value={draft.planStart} onChange={(e) => e.target.value && set('planStart', e.target.value)} />
-          )}
-        </Field>
+          </div>
+        ) : (
+          <Field
+            label="Calendar link (iCal)"
+            hint="Google Calendar: Settings → your calendar → Secret address in iCal format. iCloud: share the calendar publicly and copy the link."
+          >
+            {(id) => (
+              <input
+                id={id}
+                className="input"
+                type="url"
+                inputMode="url"
+                placeholder="https://calendar.google.com/calendar/ical/…/basic.ics"
+                value={draft.icsUrl}
+                onChange={(e) => set('icsUrl', e.target.value.trim())}
+                autoCapitalize="off"
+                autoCorrect="off"
+                spellCheck={false}
+              />
+            )}
+          </Field>
+        )}
         <Field label="Translation">
           {(id) => (
             <select id={id} className="input" value={draft.translation} onChange={(e) => set('translation', e.target.value)}>
@@ -112,6 +186,22 @@ export function SettingsScreen({ settings, onSave, onClose }: Props) {
                 </option>
               ))}
             </select>
+          )}
+        </Field>
+        <Field label="Personal worship link" hint="Opens from the Scripture section. Leave empty to hide the button.">
+          {(id) => (
+            <input
+              id={id}
+              className="input"
+              type="url"
+              inputMode="url"
+              placeholder="https://www.familyworship.io/dashboard"
+              value={draft.worshipUrl}
+              onChange={(e) => set('worshipUrl', e.target.value.trim())}
+              autoCapitalize="off"
+              autoCorrect="off"
+              spellCheck={false}
+            />
           )}
         </Field>
         <Field label="Training programme start" hint="Week 1, Day 1 of the training programme.">
