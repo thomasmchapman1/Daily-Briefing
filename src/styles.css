@@ -637,7 +637,8 @@ textarea.checkin-notes {
   padding: 5px 8px;
   font-size: 12px;
   line-height: 1.4;
-  white-space: nowrap;
+  width: max-content;
+  max-width: 220px;
 }
 
 .chart-tip-date {

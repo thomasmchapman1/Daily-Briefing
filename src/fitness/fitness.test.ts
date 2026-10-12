@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { mergeLogs, parseDuration, formatDuration, formatPace, type FitnessLog } from './log'
 import { PLAN, getSession, warmupSets, weekOf } from './plan'
-import { estimatedMax, liftHistory, movingAverage, nutritionAdvice, plannedWeight, weeklyLoss, weeklyMiles } from './stats'
+import { upsertGarminWeeks, isGarminWeeks } from './merge'
+import { estimatedMax, garminRestingHr, liftHistory, movingAverage, nutritionAdvice, plannedWeight, weekActual, weeklyLoss, weeklyMiles } from './stats'
 
 const day = (iso: string) => {
   const [y, m, d] = iso.split('-').map(Number)
@@ -136,5 +137,38 @@ describe('stats', () => {
     expect(plannedWeight(day('2026-10-11'), 195, 180)).toBe(195)
     expect(plannedWeight(day('2027-04-04'), 195, 180)).toBe(180)
     expect(plannedWeight(day('2027-04-20'), 195, 180)).toBe(180)
+  })
+})
+
+describe('Garmin weeks and logged runs', () => {
+  const run = (miles: number) => ({ run: { miles, seconds: null, hr: null, effort: null, done: true }, updatedAt: 1 })
+  const gw = (weekStart: string, miles: number, restingHr: number | null = 70) => ({ weekStart, runs: 3, miles, seconds: null, restingHr, importedAt: 1 })
+
+  it('counts a week once: the larger of logged runs and Garmin’s total', () => {
+    expect(weekActual(12, 12.1)).toBe(12.1)
+    expect(weekActual(8, null)).toBe(8)
+    expect(weekActual(0, 5)).toBe(5)
+    const log: FitnessLog = { '2026-10-20': run(3), '2026-10-22': run(4), '2026-10-24': run(5) }
+    const w2 = weeklyMiles(log, { '2026-10-19': gw('2026-10-19', 12.1) })[1]
+    expect(w2).toMatchObject({ logged: 12, garmin: 12.1, actual: 12.1 })
+    // A forgotten run: Garmin saw 12, you logged 7.
+    const missed = weeklyMiles({ '2026-10-20': run(3), '2026-10-22': run(4) }, { '2026-10-19': gw('2026-10-19', 12) })[1]
+    expect(missed.actual).toBe(12)
+  })
+
+  it('replaces a re-imported week instead of duplicating it', () => {
+    const once = upsertGarminWeeks({}, [gw('2026-10-05', 3)])
+    const twice = upsertGarminWeeks(once, [gw('2026-10-05', 6.2), gw('2026-10-12', 2)])
+    expect(Object.keys(twice)).toEqual(['2026-10-05', '2026-10-12'])
+    expect(twice['2026-10-05'].miles).toBe(6.2)
+    expect(isGarminWeeks(twice)).toBe(true)
+    expect(isGarminWeeks({ '2026-10-05': gw('2026-10-12', 1) })).toBe(false)
+  })
+
+  it('charts Garmin’s weekly resting heart rate', () => {
+    expect(garminRestingHr({ b: gw('2026-10-05', 0, 70), a: gw('2026-09-28', 4, 67), c: gw('2026-10-12', 0, null) })).toEqual([
+      { date: '2026-09-28', value: 67 },
+      { date: '2026-10-05', value: 70 },
+    ])
   })
 })

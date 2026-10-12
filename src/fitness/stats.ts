@@ -1,6 +1,7 @@
 // Derived numbers for the progress page: averages, rates, estimated maxes, mileage.
 import { addDays, daysBetween, fromIsoDate } from '../lib/date'
 import type { BodyField, FitnessLog } from './log'
+import type { GarminWeeks } from './merge'
 import { PLAN, PLAN_START, weekOf, type LiftId } from './plan'
 
 export interface Point {
@@ -107,24 +108,49 @@ export interface WeekMiles {
   week: number
   start: string
   planned: number
+  /** Miles counted for the week: the larger of the logged runs and Garmin's total, never both. */
   actual: number
+  /** Miles from runs logged in the app. */
+  logged: number
+  /** Garmin's weekly total, when an email report was imported for this week. */
+  garmin: number | null
   plannedLong: number
   actualLong: number
 }
 
-export function weeklyMiles(log: FitnessLog): WeekMiles[] {
+/**
+ * Logged runs and Garmin's weekly report describe the same runs, so a week counts
+ * whichever is larger rather than adding them: a run logged in the app and also
+ * recorded by the watch is counted once, and one you forgot to log still counts.
+ */
+export function weekActual(logged: number, garmin: number | null): number {
+  return Math.max(logged, garmin ?? 0)
+}
+
+export function weeklyMiles(log: FitnessLog, garmin: GarminWeeks = {}): WeekMiles[] {
   const runs = runHistory(log)
   return PLAN.map((w) => {
     const inWeek = runs.filter((r) => weekOf(fromIsoDate(r.date)) === w.week)
+    const logged = inWeek.reduce((a, r) => a + r.miles, 0)
+    const g = garmin[w.start]?.miles ?? null
     return {
       week: w.week,
       start: w.start,
       planned: w.plannedTotal,
-      actual: inWeek.reduce((a, r) => a + r.miles, 0),
+      actual: weekActual(logged, g),
+      logged,
+      garmin: g,
       plannedLong: w.plannedLong,
       actualLong: Math.max(0, ...inWeek.map((r) => r.miles)),
     }
   })
+}
+
+/** Garmin's weekly average resting heart rate, oldest first, as points on each week's Monday. */
+export function garminRestingHr(garmin: GarminWeeks): Point[] {
+  return Object.values(garmin)
+    .flatMap((w) => (w.restingHr != null ? [{ date: w.weekStart, value: w.restingHr }] : []))
+    .sort((a, b) => a.date.localeCompare(b.date))
 }
 
 /**

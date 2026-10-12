@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { load, save } from '../lib/storage'
 import { SEED, isValidLog, mergeLogs, type DayLog, type FitnessLog } from './log'
+import { isGarminWeeks, type GarminWeeks } from './merge'
 
 export type SyncStatus =
   | { state: 'off' }
@@ -9,22 +10,28 @@ export type SyncStatus =
   | { state: 'error'; message: string }
 
 const STORAGE_KEY = 'fitness'
+const GARMIN_KEY = 'garmin'
 
 export function loadLog(): FitnessLog {
   const stored = load<unknown>(STORAGE_KEY, null)
   return isValidLog(stored) ? mergeLogs(SEED, stored) : SEED
 }
 
-/** Sends the whole log; the server merges by day and returns the result. */
-async function pushLog(log: FitnessLog, key: string): Promise<FitnessLog> {
+function loadGarmin(): GarminWeeks {
+  const stored = load<unknown>(GARMIN_KEY, null)
+  return isGarminWeeks(stored) ? stored : {}
+}
+
+/** Sends the whole log; the server merges by day and returns it with the imported Garmin weeks. */
+async function pushLog(log: FitnessLog, key: string): Promise<{ log: FitnessLog; garmin: GarminWeeks }> {
   const res = await fetch('/api/sync', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'X-Sync-Key': key },
     body: JSON.stringify({ log }),
   })
-  const json = (await res.json().catch(() => ({}))) as { log?: unknown; error?: string }
+  const json = (await res.json().catch(() => ({}))) as { log?: unknown; garmin?: unknown; error?: string }
   if (!res.ok || !isValidLog(json.log)) throw new Error(json.error ?? `Sync failed (${res.status})`)
-  return json.log
+  return { log: json.log, garmin: isGarminWeeks(json.garmin) ? json.garmin : {} }
 }
 
 /**
@@ -34,6 +41,8 @@ async function pushLog(log: FitnessLog, key: string): Promise<FitnessLog> {
  */
 export function useFitnessLog(syncKey: string) {
   const [log, setLog] = useState<FitnessLog>(loadLog)
+  /** Weekly totals imported from Garmin's emails; the server holds them, this is a copy. */
+  const [garmin, setGarmin] = useState<GarminWeeks>(loadGarmin)
   const [sync, setSync] = useState<SyncStatus>({ state: syncKey ? 'syncing' : 'off' })
   const logRef = useRef(log)
   logRef.current = log
@@ -49,9 +58,11 @@ export function useFitnessLog(syncKey: string) {
     setSync({ state: 'syncing' })
     try {
       const remote = await pushLog(logRef.current, syncKey)
+      save(GARMIN_KEY, remote.garmin)
+      setGarmin(remote.garmin)
       // Keep any edit made while the request was in flight.
       setLog((prev) => {
-        const next = mergeLogs(prev, remote)
+        const next = mergeLogs(prev, remote.log)
         save(STORAGE_KEY, next)
         return next
       })
@@ -97,5 +108,5 @@ export function useFitnessLog(syncKey: string) {
     [commit, scheduleSync],
   )
 
-  return { log, updateDay, importLog, sync, syncNow }
+  return { log, garmin, updateDay, importLog, sync, syncNow }
 }
