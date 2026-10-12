@@ -7,7 +7,7 @@ import { load, save } from './lib/storage'
 import { getToday, scriptureKey, type ScriptureToday } from './scripture'
 import type { Settings } from './settings'
 import { getForecast } from './weather/api'
-import type { Forecast } from './weather/types'
+import type { Forecast, WeatherSource } from './weather/types'
 
 export interface SectionState<T> {
   data: T | null
@@ -15,7 +15,7 @@ export interface SectionState<T> {
 }
 
 interface Cache {
-  weather?: { data: Forecast; fetchedAt: number }
+  weather?: { data: Forecast; fetchedAt: number; source?: WeatherSource }
   events?: { data: CalendarEvent[]; date: string; icsUrl: string; fetchedAt: number }
   scripture?: { data: ScriptureToday; key: string }
   fetchedAt?: number
@@ -47,14 +47,18 @@ export function useToday(): Date {
   return ref.current.date
 }
 
-function position(settings: Settings): Promise<{ lat: number; lon: number }> {
-  const fallback = { lat: settings.lat, lon: settings.lon }
-  if (!settings.useDeviceLocation || !('geolocation' in navigator)) return Promise.resolve(fallback)
+type Position = Pick<WeatherSource, 'from' | 'reason' | 'lat' | 'lon' | 'accuracy'>
+
+function position(settings: Settings): Promise<Position> {
+  const saved = (reason: WeatherSource['reason']): Position => ({ from: 'saved', reason, lat: settings.lat, lon: settings.lon })
+  if (!settings.useDeviceLocation) return Promise.resolve(saved('off'))
+  if (!('geolocation' in navigator)) return Promise.resolve(saved('unsupported'))
   return new Promise((resolve) => {
     navigator.geolocation.getCurrentPosition(
-      (p) => resolve({ lat: p.coords.latitude, lon: p.coords.longitude }),
-      () => resolve(fallback),
-      { timeout: 6000, maximumAge: STALE_AFTER_MS },
+      (p) => resolve({ from: 'device', lat: p.coords.latitude, lon: p.coords.longitude, accuracy: p.coords.accuracy }),
+      (err) =>
+        resolve(saved(err.code === err.PERMISSION_DENIED ? 'denied' : err.code === err.TIMEOUT ? 'timeout' : 'unavailable')),
+      { timeout: 10000, maximumAge: 10 * 60 * 1000 },
     )
   })
 }
@@ -79,6 +83,7 @@ export function useBriefing(settings: Settings, today: Date) {
   const [scripture, setScripture] = useState<SectionState<ScriptureToday>>(
     () => fromCache(cacheRef.current, settings, today).scripture,
   )
+  const [weatherSource, setWeatherSource] = useState<WeatherSource | null>(cacheRef.current.weather?.source ?? null)
   const [refreshing, setRefreshing] = useState(false)
   const generation = useRef(0)
 
@@ -95,11 +100,13 @@ export function useBriefing(settings: Settings, today: Date) {
 
     const weatherJob = (async () => {
       try {
-        const { lat, lon } = await position(settings)
-        const data = await getForecast(lat, lon)
+        const pos = await position(settings)
+        const { forecast: data, grid } = await getForecast(pos.lat, pos.lon)
         if (!current()) return
-        persist({ weather: { data, fetchedAt: Date.now() } })
+        const source: WeatherSource = { ...pos, gridLat: grid.lat, gridLon: grid.lon, timezone: grid.timezone, fetchedAt: Date.now() }
+        persist({ weather: { data, fetchedAt: source.fetchedAt, source } })
         setWeather({ data, error: false })
+        setWeatherSource(source)
       } catch {
         if (current()) setWeather((s) => ({ data: s.data, error: s.data == null }))
       }
@@ -160,5 +167,5 @@ export function useBriefing(settings: Settings, today: Date) {
     return () => document.removeEventListener('visibilitychange', onVisible)
   }, [refresh])
 
-  return { weather, events, scripture, refreshing, refresh, calendarLinked: Boolean(settings.icsUrl) }
+  return { weather, weatherSource, events, scripture, refreshing, refresh, calendarLinked: Boolean(settings.icsUrl) }
 }

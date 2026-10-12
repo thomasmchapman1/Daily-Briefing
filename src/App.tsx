@@ -41,7 +41,7 @@ export default function App() {
         />
         <footer className="colophon">— Fin —</footer>
       </main>
-      {settingsOpen && <SettingsScreen settings={settings} onSave={saveSettings} onClose={() => setSettingsOpen(false)} />}
+      {settingsOpen && <SettingsScreen settings={settings} weatherSource={briefing.weatherSource} onSave={saveSettings} onClose={() => setSettingsOpen(false)} />}
     </>
   )
 }

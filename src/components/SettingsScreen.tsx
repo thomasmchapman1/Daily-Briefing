@@ -2,10 +2,12 @@ import { useId, useState, type ReactNode } from 'react'
 import { PLANS, allTranslations } from '../scripture'
 import type { Settings } from '../settings'
 import { geocodeCity } from '../weather/api'
+import type { WeatherSource } from '../weather/types'
 import { Sheet } from './Sheet'
 
 interface Props {
   settings: Settings
+  weatherSource: WeatherSource | null
   onSave: (next: Settings) => void
   onClose: () => void
 }
@@ -22,7 +24,51 @@ function Field({ label, hint, children }: { label: string; hint?: ReactNode; chi
   )
 }
 
-export function SettingsScreen({ settings, onSave, onClose }: Props) {
+const REASONS: Record<NonNullable<WeatherSource['reason']>, string> = {
+  off: 'device location is turned off above',
+  unsupported: 'this browser can’t share location',
+  denied: 'location permission was denied',
+  unavailable: 'the phone couldn’t get a location fix',
+  timeout: 'the phone took too long to find its location',
+}
+
+const coord = (n: number, digits = 4) => n.toFixed(digits).replace('-', '−')
+
+/** Shows where the last forecast's coordinates came from, so the weather can be checked. */
+function WeatherSourceInfo({ source, city }: { source: WeatherSource | null; city: string }) {
+  if (!source) return <span className="field-hint">No forecast has loaded yet.</span>
+  const { lat, lon } = source
+  const map = `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=12/${lat}/${lon}`
+  const updated = new Date(source.fetchedAt).toLocaleString([], { weekday: 'short', hour: 'numeric', minute: '2-digit' })
+  return (
+    <span className="field-hint" style={{ marginTop: 0 }}>
+      {source.from === 'device' ? (
+        <>
+          From this device’s location: {coord(lat)}, {coord(lon)}
+          {source.accuracy != null && ` (within ${Math.round(source.accuracy)} m)`}.
+        </>
+      ) : (
+        <>
+          From the saved city, {city}: {coord(lat)}, {coord(lon)}. Device location wasn’t used because{' '}
+          {REASONS[source.reason ?? 'off']}.
+        </>
+      )}{' '}
+      <a href={map} target="_blank" rel="noreferrer">
+        Show on map
+      </a>
+      <br />
+      {source.gridLat != null && source.gridLon != null && (
+        <>
+          Open-Meteo grid point {coord(source.gridLat, 2)}, {coord(source.gridLon, 2)}
+          {source.timezone && ` · ${source.timezone}`} ·{' '}
+        </>
+      )}
+      updated {updated}.
+    </span>
+  )
+}
+
+export function SettingsScreen({ settings, weatherSource, onSave, onClose }: Props) {
   const [draft, setDraft] = useState(settings)
   const [lookup, setLookup] = useState<string | null>(null)
   const set = <K extends keyof Settings>(key: K, value: Settings[K]) => setDraft((d) => ({ ...d, [key]: value }))
@@ -67,6 +113,10 @@ export function SettingsScreen({ settings, onSave, onClose }: Props) {
             <input type="checkbox" checked={draft.useDeviceLocation} onChange={(e) => set('useDeviceLocation', e.target.checked)} />
             Use this device’s location for weather
           </label>
+        </div>
+        <div className="field">
+          <label>Last forecast came from</label>
+          <WeatherSourceInfo source={weatherSource} city={settings.city} />
         </div>
         <Field
           label="Calendar link (iCal)"
