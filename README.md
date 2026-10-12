@@ -28,6 +28,7 @@ Tap the masthead title (**The Morning Briefing**) to open settings:
 - **Calendar**: either **Google Calendar** (sign in with Google, then choose which calendars to show; this needs the one-time setup below) or an **iCal link** (a private ICS link from Google or iCloud; `webcal://…` links work too).
 - **Translation**, **personal worship link** (defaults to familyworship.io; empty hides the links), **training programme start**.
 - **Edit training plan**: choose a week, open a day, and change its title, minutes and exercises (add, remove or reorder). You can also add, copy or remove weeks, or reset to the original plan. Edits are saved on this device.
+- **Import from Claude** (in the training plan editor): copy the ready-made prompt into any Claude chat (it can include your current plan), say what you want, and paste Claude's reply back. The app finds the plan in the reply, shows a preview, and loads it into the editor for you to save.
 
 Settings, read history, workout ticks and the last briefing are kept in `localStorage` under the `morning:` prefix.
 

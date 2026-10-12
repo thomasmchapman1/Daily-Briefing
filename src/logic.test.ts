@@ -6,7 +6,7 @@ import { splitReference } from './scripture/refs'
 import type { Passage } from './scripture/types'
 import { firstHourIndex, toForecast, type OpenMeteo } from './weather/api'
 import { compass } from './weather/summary'
-import { DEFAULT_PROGRAM, getWorkout, normalizeProgram } from './workout'
+import { DEFAULT_PROGRAM, getWorkout, normalizeProgram, parsePlanText, planPrompt } from './workout'
 
 describe('dates', () => {
   it('numbers the masthead', () => {
@@ -134,6 +134,42 @@ describe('training plan edits', () => {
     expect(getWorkout(new Date(2026, 9, 12), '2026-10-12', p)).toMatchObject({ week: 1, day: 1, title: 'Run', rest: false })
     expect(getWorkout(new Date(2026, 9, 19), '2026-10-12', p)).toMatchObject({ week: 1, day: 1, title: 'Run' })
     expect(getWorkout(new Date(2026, 9, 13), '2026-10-12', p).rest).toBe(true)
+  })
+})
+
+describe('importing a plan from a Claude chat', () => {
+  const plan = { name: 'Upper/lower', weeks: [{ days: [{ title: 'Upper', minutes: 45, exercises: [{ name: 'Bench', spec: '3 × 8' }] }, { title: 'Rest day', minutes: 0, exercises: [] }] }] }
+
+  it('finds the plan in a reply with a code block and other text', () => {
+    const reply = `Here's your plan!\n\n\`\`\`json\n${JSON.stringify(plan, null, 2)}\n\`\`\`\n\nLet me know if you want changes.`
+    const parsed = parsePlanText(reply)
+    expect(parsed.ok).toBe(true)
+    if (parsed.ok) {
+      expect(parsed.program.name).toBe('Upper/lower')
+      expect(parsed.program.weeks[0].days).toHaveLength(7)
+      expect(parsed.program.weeks[0].days[0].exercises).toEqual([{ name: 'Bench', spec: '3 × 8' }])
+    }
+  })
+
+  it('accepts bare JSON, or just a list of weeks', () => {
+    expect(parsePlanText(JSON.stringify(plan)).ok).toBe(true)
+    expect(parsePlanText(`Sure: ${JSON.stringify(plan.weeks)}`).ok).toBe(true)
+  })
+
+  it('explains what is wrong', () => {
+    expect(parsePlanText('Sounds good, I will write it next.')).toMatchObject({ ok: false, error: expect.stringMatching(/No plan found/) })
+    expect(parsePlanText('```json\n{"weeks": [{"days": [\n```')).toMatchObject({ ok: false, error: expect.stringMatching(/cut off/) })
+    expect(parsePlanText('{"name": "x"}')).toMatchObject({ ok: false, error: expect.stringMatching(/weeks/) })
+    expect(parsePlanText('{"weeks": [{"days": [{"title": "Rest day", "exercises": []}]}]}')).toMatchObject({ ok: false, error: expect.stringMatching(/no exercises/) })
+  })
+
+  it('writes a prompt that names the first weekday and can carry the current plan', () => {
+    const prompt = planPrompt('2026-10-12', normalizeProgram(plan))
+    expect(prompt).toContain('Day 1 is a Monday')
+    expect(prompt).toContain('"name":"Upper/lower"')
+    expect(planPrompt('2026-10-12')).not.toContain('current plan')
+    // The format example in the prompt is itself a valid plan.
+    expect(parsePlanText(planPrompt('2026-10-12')).ok).toBe(true)
   })
 })
 
