@@ -32,7 +32,7 @@ export const DEFAULT_SETTINGS: Settings = {
   icsUrl: '',
   translation: 'kjv',
   worshipUrl: 'https://www.familyworship.io/dashboard',
-  goalWeight: 180,
+  goalWeight: 175,
   goalWaist: 32,
   syncKey: '',
 }

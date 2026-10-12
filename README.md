@@ -27,7 +27,7 @@ Tap the masthead title (**The Morning Briefing**) to open settings:
 - **City**: shown on the masthead. Weather uses it when device location is off or denied. "Look up" geocodes it with Open-Meteo.
 - **Calendar**: either **Google Calendar** (sign in with Google, then choose which calendars to show; this needs the one-time setup below) or an **iCal link** (a private ICS link from Google or iCloud; `webcal://…` links work too).
 - **Translation**, **personal worship link** (defaults to familyworship.io; empty hides the links).
-- **Goal weight** and **goal waist** (180 lb and 32 in), shown on the progress page.
+- **Goal weight** and **goal waist** (175 lb and 32 in), shown on the progress page.
 - **Training log sync passcode**: see *Training log and cloud sync* below.
 
 Settings, read history, the training log and the last briefing are kept in `localStorage` under the `morning:` prefix.
