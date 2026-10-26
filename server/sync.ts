@@ -3,50 +3,68 @@
 // everything on the device.
 //
 // The log is one JSON document, kept in whichever store the project has:
-//   Vercel Blob (preferred)  BLOB_READ_WRITE_TOKEN, set by Storage → Create → Blob → Connect.
+//   Vercel Blob (preferred)  BLOB_STORE_ID, set by Storage → Create → Blob → Connect; the function
+//                            signs in with the deployment's own Vercel identity (OIDC). Older
+//                            stores set BLOB_READ_WRITE_TOKEN instead; either works.
 //                            Stored as a private blob, so it can't be read by URL.
 //   Upstash Redis            KV_REST_API_URL + KV_REST_API_TOKEN (or UPSTASH_REDIS_REST_URL / _TOKEN).
 // And always:
 //   SYNC_KEY                 a passphrase you also type into the app's settings
 //
-// GET  → { log }                  the whole log
-// POST { log } → { log }          merges the days you send (newer updatedAt wins), returns the result
+// GET  → { log, garmin }
+// POST { log?, garmin? } → { log, garmin }
+//   log:    days from a device, merged by day (newer updatedAt wins)
+//   garmin: GarminWeek[] from the weekly Garmin email import; a week replaces the same week
+//           already stored, so importing twice never duplicates it
 import { createHash, timingSafeEqual } from 'node:crypto'
 import { BlobPreconditionFailedError, get, put } from '@vercel/blob'
-import { isDatedLog, mergeLogs, type DatedLog } from '../src/fitness/merge.js'
+import {
+  isDatedLog,
+  isGarminWeek,
+  isGarminWeeks,
+  mergeLogs,
+  upsertGarminWeeks,
+  type GarminWeek,
+  type GarminWeeks,
+} from '../src/fitness/merge.js'
 
 export interface SyncResult {
   status: number
   json: unknown
 }
 
-/** Where the log lives. `version` lets a write fail if someone else wrote in between. */
+/** The stored documents: the daily log and the Garmin weeks. */
+export type Doc = 'log' | 'garmin'
+
+/** Where the documents live. `version` lets a write fail if someone else wrote in between. */
 export interface LogStore {
-  read(): Promise<{ log: DatedLog; version: string | null }>
-  /** Returns false if the stored log changed since `version` was read. */
-  write(log: DatedLog, version: string | null): Promise<boolean>
+  read(doc: Doc): Promise<{ data: Record<string, unknown>; version: string | null }>
+  /** Returns false if the stored document changed since `version` was read. */
+  write(doc: Doc, data: Record<string, unknown>, version: string | null): Promise<boolean>
 }
 
-const BLOB_PATH = 'training/log.json'
-const REDIS_KEY = 'fitness:log'
+const blobPath = (doc: Doc) => `training/${doc}.json`
+const redisKey = (doc: Doc) => `fitness:${doc}`
 
-const parse = (raw: string): DatedLog => {
+const parse = (raw: string): Record<string, unknown> => {
   const parsed = JSON.parse(raw)
-  return isDatedLog(parsed) ? parsed : {}
+  return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {}
 }
 
-export function blobStore(token: string): LogStore {
+/** With no token, @vercel/blob signs in with the deployment's Vercel OIDC token and BLOB_STORE_ID. */
+export function blobStore(token?: string): LogStore {
+  const auth = token ? { token } : {}
   return {
-    async read() {
-      const res = await get(BLOB_PATH, { access: 'private', useCache: false, token })
-      if (!res || res.statusCode !== 200) return { log: {}, version: null }
-      return { log: parse(await new Response(res.stream).text()), version: res.blob.etag }
+    async read(doc) {
+      const res = await get(blobPath(doc), { access: 'private', useCache: false, ...auth })
+      if (!res || res.statusCode !== 200) return { data: {}, version: null }
+      return { data: parse(await new Response(res.stream).text()), version: res.blob.etag }
     },
-    async write(log, version) {
+    async write(doc, data, version) {
       try {
-        await put(BLOB_PATH, JSON.stringify(log), {
+        await put(blobPath(doc), JSON.stringify(data), {
           access: 'private',
-          token,
+          ...auth,
           contentType: 'application/json',
           addRandomSuffix: false,
           allowOverwrite: true,
@@ -74,12 +92,12 @@ export function redisStore(url: string, token: string): LogStore {
     return json.result
   }
   return {
-    async read() {
-      const raw = await redis(['GET', REDIS_KEY])
-      return { log: typeof raw === 'string' ? parse(raw) : {}, version: null }
+    async read(doc) {
+      const raw = await redis(['GET', redisKey(doc)])
+      return { data: typeof raw === 'string' ? parse(raw) : {}, version: null }
     },
-    async write(log) {
-      await redis(['SET', REDIS_KEY, JSON.stringify(log)])
+    async write(doc, data) {
+      await redis(['SET', redisKey(doc), JSON.stringify(data)])
       return true
     },
   }
@@ -87,7 +105,7 @@ export function redisStore(url: string, token: string): LogStore {
 
 export function storeFromEnv(): LogStore | null {
   const env = process.env
-  if (env.BLOB_READ_WRITE_TOKEN) return blobStore(env.BLOB_READ_WRITE_TOKEN)
+  if (env.BLOB_STORE_ID || env.BLOB_READ_WRITE_TOKEN) return blobStore(env.BLOB_READ_WRITE_TOKEN)
   const url = env.KV_REST_API_URL ?? env.UPSTASH_REDIS_REST_URL
   const token = env.KV_REST_API_TOKEN ?? env.UPSTASH_REDIS_REST_TOKEN
   return url && token ? redisStore(url, token) : null
@@ -106,17 +124,39 @@ export async function handleSync(method: string, key: string | undefined, body: 
   }
   if (!keyMatches(key, syncKey)) return { status: 401, json: { error: 'Wrong sync passcode' } }
 
-  if (method === 'GET') return { status: 200, json: { log: (await store.read()).log } }
+  const readLog = async () => {
+    const { data, version } = await store.read('log')
+    return { data: isDatedLog(data) ? data : {}, version }
+  }
+  const readGarmin = async () => {
+    const { data, version } = await store.read('garmin')
+    return { data: isGarminWeeks(data) ? data : ({} as GarminWeeks), version }
+  }
+
+  if (method === 'GET') return { status: 200, json: { log: (await readLog()).data, garmin: (await readGarmin()).data } }
   if (method !== 'POST') return { status: 405, json: { error: 'Method not allowed' } }
 
-  const incoming = (body as { log?: unknown } | null)?.log
-  if (!isDatedLog(incoming)) return { status: 400, json: { error: 'Expected { log }' } }
+  const { log: incomingLog, garmin: incomingGarmin } = (body ?? {}) as { log?: unknown; garmin?: unknown }
+  if (incomingLog === undefined && incomingGarmin === undefined) return { status: 400, json: { error: 'Expected { log } or { garmin }' } }
+  if (incomingLog !== undefined && !isDatedLog(incomingLog)) return { status: 400, json: { error: 'log must map dates to days' } }
+  if (incomingGarmin !== undefined && !(Array.isArray(incomingGarmin) && incomingGarmin.every(isGarminWeek))) {
+    return { status: 400, json: { error: 'garmin must be a list of weeks' } }
+  }
 
   // Read, merge, write; if another device wrote in between, merge again on top of that.
-  for (let attempt = 0; attempt < 3; attempt++) {
-    const { log, version } = await store.read()
-    const merged = mergeLogs(log, incoming)
-    if (await store.write(merged, version)) return { status: 200, json: { log: merged } }
+  async function save<T extends Record<string, unknown>>(doc: Doc, read: () => Promise<{ data: T; version: string | null }>, merge: (stored: T) => T) {
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const { data, version } = await read()
+      const merged = merge(data)
+      if (await store!.write(doc, merged, version)) return merged
+    }
+    return null
   }
-  return { status: 409, json: { error: 'Another device was syncing at the same time. Try again.' } }
+
+  const log = isDatedLog(incomingLog) ? await save('log', readLog, (stored) => mergeLogs(stored, incomingLog)) : (await readLog()).data
+  const garmin = Array.isArray(incomingGarmin)
+    ? await save('garmin', readGarmin, (stored) => upsertGarminWeeks(stored, incomingGarmin as GarminWeek[]))
+    : (await readGarmin()).data
+  if (!log || !garmin) return { status: 409, json: { error: 'Another device was syncing at the same time. Try again.' } }
+  return { status: 200, json: { log, garmin } }
 }

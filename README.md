@@ -87,9 +87,11 @@ The Scripture section shows one verse a day and sends you to your worship site (
 
 The log is saved on the device. To sync it between devices and keep it safe if Safari's data is cleared:
 
-1. In Vercel, open the project → **Storage** → **Create Database** → **Blob** → create it and connect it to this project (all environments). This adds `BLOB_READ_WRITE_TOKEN`. The log is stored as a private blob, `training/log.json`. (Upstash Redis works too: it sets `KV_REST_API_URL` and `KV_REST_API_TOKEN`.)
+1. In Vercel, open the project → **Storage** → **Create Database** → **Blob** → create it and connect it to this project (all environments). This adds `BLOB_STORE_ID` (older stores add `BLOB_READ_WRITE_TOKEN`); the sync function signs in with the project's own Vercel identity, so there's no token to copy. The log is stored as a private blob, `training/log.json`. (Upstash Redis works too: it sets `KV_REST_API_URL` and `KV_REST_API_TOKEN`.)
 2. **Settings → Environment Variables**: add `SYNC_KEY`, a passphrase of your choice.
 3. Redeploy. In the app, open settings and enter the same passphrase as the **Training log sync passcode** on each device.
+
+**Garmin.** Garmin emails weekly reports (runs and miles, average resting heart rate). A weekly job can import them through the same endpoint (`POST /api/sync` with `{ garmin: [...] }`). They're stored beside the daily log in their own document, keyed by the week's Monday, so importing a week again replaces it. Weekly miles count the larger of your logged runs and Garmin's total, so a run recorded in both is counted once. Imported weeks appear on the progress page with a resting heart rate chart.
 
 Sync runs when the app opens, when it returns to the foreground, and shortly after each edit (`POST /api/sync`, `server/sync.ts`). Days merge by last edit, and Blob writes are conditional, so two devices syncing at once can't overwrite each other's days.
 
