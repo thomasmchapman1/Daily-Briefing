@@ -3,6 +3,7 @@
 // Thu quality, Sat long) a week; Friday and Sunday off. Every main-lift weight
 // and every run comes from the plan's week-by-week tables below.
 import { addDays, daysBetween, fromIsoDate, isoDate } from '../lib/date'
+import { DEFAULT_PROFILE, formatPaceSeconds, liftRatios, pacesFor, roundTo5, type Paces, type Profile } from './profile'
 
 export const PLAN_NAME = 'OKC Marathon 2027'
 export const PLAN_START = '2026-10-12'
@@ -169,8 +170,6 @@ export function weekOf(date: Date): number | null {
   return week <= PLAN_WEEKS ? week : null
 }
 
-const roundTo5 = (n: number) => Math.round(n / 5) * 5
-
 /** 3 ramp sets at about 40%, 60% and 80% of the work weight for 5, 3 and 2 reps; never below the empty bar. */
 export function warmupSets(work: number): [number, number][] {
   return ([
@@ -233,27 +232,54 @@ function liftB(week: number, w: WeekRow): PlannedLift[] {
   ]
 }
 
-/** One full-body lift for weeks when only one day is free (week 1 is one). */
-export function fieldDay(week: number, rdlWeight = 135): PlannedLift[] {
+/**
+ * The week's row with its weights scaled to your maxes. The table was written for
+ * bench 135, squat 200 and deadlift 260. Rows and overhead press stay as the plan set
+ * them: there's no max for them yet, and "last time" shows when to add weight.
+ */
+export function scaledWeek(week: number, profile: Profile = DEFAULT_PROFILE): WeekRow {
   const w = WEEKS[week - 1]
+  const r = liftRatios(profile)
+  const scale = (n: number | null, ratio: number) => (n == null ? null : roundTo5(n * ratio))
+  return {
+    ...w,
+    squat: scale(w.squat, r.squat),
+    deadlift: scale(w.deadlift, r.deadlift),
+    bench: scale(w.bench, r.bench),
+  }
+}
+
+/** One full-body lift for weeks when only one day is free (week 1 is one). */
+export function fieldDay(week: number, profile: Profile = DEFAULT_PROFILE): PlannedLift[] {
+  const w = scaledWeek(week, profile)
+  const dl = liftRatios(profile).deadlift
   return [
     lift('squat', week, 3, 5, w.squat),
     lift('bench', week, 3, 5, w.bench),
-    lift('rdl', week, 3, 8, rdlWeight, { note: 'Add 10 lb each field day, up to 185 lb.' }),
+    lift('rdl', week, 3, 8, roundTo5(135 * dl), { note: `Add 10 lb each field day, up to ${roundTo5(185 * dl)} lb.` }),
     lift('row', week, 3, 8, w.row),
     lift('plank', week, 3, plankSeconds(week), null, { repsLabel: `${plankSeconds(week)} sec` }),
   ]
 }
 
 const STRIDES = '6 × 20 s fast but relaxed, with 60–90 s of walking or jogging between, at the end.'
-const EASY = 'Conversational pace: you can speak full sentences (heart-rate zone 2).'
-const TEMPO = 'Tempo is comfortably hard: a pace you could hold for about an hour.'
-const INTERVALS = 'Each 800 m at about 5K effort with a 400 m jog between.'
-const MARATHON_PACE = 'Goal marathon pace comes from your February 10K, not from guessing.'
-const LONG =
-  'Easy pace, first 2 miles slower. After 75 minutes take 30–60 g of carbs an hour plus fluids and electrolytes; practise your race fuel.'
+const LONG_FUEL = 'After 75 minutes take 30–60 g of carbs an hour plus fluids and electrolytes; practise your race fuel.'
 
-function qualityRun(text: string): PlannedRun {
+/** Run descriptions with your paces in them, worked out from your 2-mile time. */
+function runText(paces: Paces) {
+  const f = (s: number) => formatPaceSeconds(s)
+  const easy = `${f(paces.easy[0])}–${f(paces.easy[1])} /mi`
+  return {
+    easy: `Easy: ${easy}, conversational (you can speak full sentences; heart-rate zone 2). Slower is fine.`,
+    tempo: `Tempo at about ${f(paces.tempo)} /mi: comfortably hard, a pace you could hold for about an hour. Warm-up and cool-down miles easy (${easy}).`,
+    intervals: `Each 800 m in about ${formatPaceSeconds(paces.interval800, 1)} (${f(paces.interval)} /mi), with a 400 m jog between. Warm-up and cool-down easy (${easy}).`,
+    marathonPace: `Marathon pace for now: about ${f(paces.marathon)} /mi, from your 2-mile time. Your February 10K will set the real goal pace. Easy miles at ${easy}.`,
+    marathonPaceShort: `Marathon pace for now: about ${f(paces.marathon)} /mi; your February 10K will set the real goal pace.`,
+    long: `Easy pace (${easy}), first 2 miles slower. ${LONG_FUEL}`,
+  }
+}
+
+function qualityRun(text: string, t: ReturnType<typeof runText>): PlannedRun {
   const easy = text.match(/^(\d+(?:\.\d+)?) easy \+ (\d+ )?strides$/)
   if (easy) {
     const n = easy[2] ? easy[2].trim() : '6'
@@ -261,24 +287,24 @@ function qualityRun(text: string): PlannedRun {
       kind: 'quality',
       title: `${easy[1]} mi easy + strides`,
       miles: Number(easy[1]),
-      detail: `${EASY} Then ${STRIDES.replace(/^6/, n)}`,
+      detail: `${t.easy} Then ${STRIDES.replace(/^6/, n)}`,
     }
   }
-  const detail = /800/.test(text) ? INTERVALS : /marathon pace/.test(text) ? MARATHON_PACE : TEMPO
+  const detail = /800/.test(text) ? t.intervals : /marathon pace/.test(text) ? t.marathonPace : t.tempo
   const miles = text.match(/\d+(?:\.\d+)?(?= easy| at marathon)/g)?.reduce((a, b) => a + Number(b), 0) ?? null
   return { kind: 'quality', title: text.replace(/(\d) easy/g, '$1 mi easy').replace(/^./, (c) => c.toUpperCase()), miles: /min/.test(text) || /800/.test(text) ? null : miles, detail }
 }
 
-function longRun(text: string): PlannedRun {
+function longRun(text: string, t: ReturnType<typeof runText>): PlannedRun {
   const miles = Number(text.match(/^\d+(?:\.\d+)?/)?.[0])
-  if (/optional/.test(text)) return { kind: 'easy', title: `${miles} mi easy (optional)`, miles, detail: EASY, optional: true }
+  if (/optional/.test(text)) return { kind: 'easy', title: `${miles} mi easy (optional)`, miles, detail: t.easy, optional: true }
   const extra = text.replace(/^\d+(?:\.\d+)?/, '').replace(/^,\s*/, '').replace(/^\s*\((.*)\)$/, '$1')
-  return {
-    kind: 'long',
-    title: `${miles} mi long run${extra ? `, ${extra}` : ''}`,
-    miles,
-    detail: /10K/.test(text) ? `${LONG} Or race a 10K with a warm-up and cool-down; that result sets your marathon pace.` : LONG,
-  }
+  const detail = /10K/.test(text)
+    ? `${t.long} Or race a 10K with a warm-up and cool-down; that result sets your marathon pace.`
+    : /marathon pace/.test(text)
+      ? `${t.long} ${t.marathonPaceShort}`
+      : t.long
+  return { kind: 'long', title: `${miles} mi long run${extra ? `, ${extra}` : ''}`, miles, detail }
 }
 
 const REST_NOTES: Record<number, string> = {
@@ -287,7 +313,7 @@ const REST_NOTES: Record<number, string> = {
 }
 
 /** Today's session from the plan. Day of week: Mon lift A, Tue easy, Wed lift B, Thu quality, Fri off, Sat long, Sun off. */
-export function getSession(date: Date): Session {
+export function getSession(date: Date, profile: Profile = DEFAULT_PROFILE): Session {
   const iso = isoDate(date)
   const week = weekOf(date)
   const dow = date.getDay()
@@ -308,7 +334,8 @@ export function getSession(date: Date): Session {
     }
   }
 
-  const w = WEEKS[week - 1]
+  const w = scaledWeek(week, profile)
+  const t = runText(pacesFor(profile))
   const phase = phaseOf(week)
   const weekLabel = `Week ${week} of ${PLAN_WEEKS} · ${phase}${isCutback(week) ? ' · cutback' : ''}`
   const notes = w.note ? [w.note] : []
@@ -337,8 +364,8 @@ export function getSession(date: Date): Session {
 
   // Week 1 is a field week: one full-body lift on Tuesday, an optional easy 3 on Saturday.
   if (week === 1) {
-    if (dow === 2) return { ...base, week, phase, kind: 'lift', title: 'Field-day lift', subtitle: weekLabel, lifts: fieldDay(1), notes }
-    if (dow === 6) return { ...base, week, phase, kind: 'run', title: 'Easy run', subtitle: weekLabel, run: longRun(w.sat!), notes }
+    if (dow === 2) return { ...base, week, phase, kind: 'lift', title: 'Field-day lift', subtitle: weekLabel, lifts: fieldDay(1, profile), notes }
+    if (dow === 6) return { ...base, week, phase, kind: 'run', title: 'Easy run', subtitle: weekLabel, run: longRun(w.sat!, t), notes }
     return rest(REST_NOTES[dow])
   }
 
@@ -354,17 +381,17 @@ export function getSession(date: Date): Session {
         kind: 'run',
         title: 'Easy run',
         subtitle: weekLabel,
-        run: { kind: 'easy', title: `${w.tue} mi easy`, miles: w.tue, detail: EASY },
+        run: { kind: 'easy', title: `${w.tue} mi easy`, miles: w.tue, detail: t.easy },
         notes,
       }
     case 3:
       if (w.bench == null) return rest('Race week: no lifting. Rest and walk.')
       return { ...base, week, phase, kind: 'lift', title: 'Lift B · Upper body', subtitle: weekLabel, lifts: liftB(week, w), notes }
     case 4:
-      return { ...base, week, phase, kind: 'run', title: week >= 14 ? 'Quality run' : 'Easy run + strides', subtitle: weekLabel, run: qualityRun(w.thu!), notes }
+      return { ...base, week, phase, kind: 'run', title: week >= 14 ? 'Quality run' : 'Easy run + strides', subtitle: weekLabel, run: qualityRun(w.thu!, t), notes }
     case 6:
       if (w.sat == null) return rest('Rest before Sunday’s race. Lay out your kit and fuel.')
-      return { ...base, week, phase, kind: 'run', title: 'Long run', subtitle: weekLabel, run: longRun(w.sat), notes }
+      return { ...base, week, phase, kind: 'run', title: 'Long run', subtitle: weekLabel, run: longRun(w.sat, t), notes }
     default:
       return rest(REST_NOTES[dow])
   }

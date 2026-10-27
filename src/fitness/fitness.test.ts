@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { mergeLogs, parseDuration, formatDuration, formatPace, type FitnessLog } from './log'
-import { PLAN, getSession, warmupSets, weekOf } from './plan'
+import { PLAN, getSession, scaledWeek, warmupSets, weekOf } from './plan'
+import { DEFAULT_PROFILE, TABLE_MAXES, formatPaceSeconds, pacesFor, predictRace, strengthTargets, vdot } from './profile'
 import { upsertGarminWeeks, isGarminWeeks } from './merge'
 import { estimatedMax, garminRestingHr, liftHistory, movingAverage, nutritionAdvice, plannedWeight, weekActual, weeklyLoss, weeklyMiles } from './stats'
 
@@ -24,9 +25,9 @@ describe('plan schedule', () => {
     const tue = getSession(day('2026-10-13'))
     expect(tue.title).toBe('Field-day lift')
     expect(tue.lifts.map((l) => [l.id, l.sets, l.reps, l.weight])).toEqual([
-      ['squat', 3, 5, 155],
-      ['bench', 3, 5, 105],
-      ['rdl', 3, 8, 135],
+      ['squat', 3, 5, 145],
+      ['bench', 3, 5, 130],
+      ['rdl', 3, 8, 125],
       ['row', 3, 8, 85],
       ['plank', 3, 40, null],
     ])
@@ -36,17 +37,17 @@ describe('plan schedule', () => {
   it('gives the week’s lifting weights on Monday and Wednesday', () => {
     const mon = getSession(day('2026-10-19'))
     expect(mon.title).toBe('Lift A · Lower body')
-    expect(mon.lifts.find((l) => l.id === 'squat')).toMatchObject({ sets: 3, reps: 5, weight: 160 })
-    expect(mon.lifts.find((l) => l.id === 'deadlift')).toMatchObject({ sets: 1, weight: 195 })
+    expect(mon.lifts.find((l) => l.id === 'squat')).toMatchObject({ sets: 3, reps: 5, weight: 150 })
+    expect(mon.lifts.find((l) => l.id === 'deadlift')).toMatchObject({ sets: 1, weight: 185 })
     expect(mon.lifts.find((l) => l.id === 'plank')?.repsLabel).toBe('50 sec')
     const wed = getSession(day('2026-10-21'))
-    expect(wed.lifts.map((l) => l.weight)).toEqual([110, 85, 55, 110, 20, 40])
+    expect(wed.lifts.map((l) => l.weight)).toEqual([135, 85, 55, 110, 20, 40])
   })
 
   it('cuts sets on cutback and peak weeks and drops lifting in race week', () => {
     const cut = getSession(day('2026-11-02'))
     expect(cut.subtitle).toContain('cutback')
-    expect(cut.lifts.find((l) => l.id === 'squat')).toMatchObject({ sets: 2, weight: 150 })
+    expect(cut.lifts.find((l) => l.id === 'squat')).toMatchObject({ sets: 2, weight: 140 })
     expect(getSession(day('2027-03-15')).lifts.find((l) => l.id === 'squat')?.sets).toBe(2)
     expect(getSession(day('2027-04-19')).kind).toBe('rest')
   })
@@ -170,5 +171,36 @@ describe('Garmin weeks and logged runs', () => {
       { date: '2026-09-28', value: 67 },
       { date: '2026-10-05', value: 70 },
     ])
+  })
+})
+
+describe('profile: maxes and paces', () => {
+  it('scales squat, bench and deadlift to your maxes and leaves rows and presses as planned', () => {
+    const asWritten = { benchMax: TABLE_MAXES.bench, squatMax: TABLE_MAXES.squat, deadliftMax: TABLE_MAXES.deadlift, twoMileSeconds: 928 }
+    expect(scaledWeek(12, asWritten)).toMatchObject({ squat: 195, deadlift: 230, bench: 130, row: 120, ohp: 70 })
+    expect(scaledWeek(12, DEFAULT_PROFILE)).toMatchObject({ squat: 180, deadlift: 215, bench: 160, row: 120, ohp: 70 })
+    expect(scaledWeek(28, DEFAULT_PROFILE).squat).toBeNull()
+  })
+
+  it('sets targets from your maxes', () => {
+    expect(strengthTargets(DEFAULT_PROFILE)).toEqual({ bench: 190, squat: 210, deadlift: 260 })
+  })
+
+  it('works out paces from the 2-mile time (VDOT)', () => {
+    expect(vdot(2 * 1609.344, 928)).toBeCloseTo(39.0, 1)
+    const p = pacesFor(DEFAULT_PROFILE)
+    expect(p.easy.map((s) => formatPaceSeconds(s))).toEqual(['10:00', '11:05'])
+    expect(formatPaceSeconds(p.tempo)).toBe('8:20')
+    expect(formatPaceSeconds(p.interval800, 1)).toBe('3:49')
+    // Daniels' tables put a VDOT of 39 at roughly a 51-minute 10K.
+    expect(Math.round(predictRace(p.vdot, 10000) / 60)).toBe(51)
+  })
+
+  it('puts your paces in the run descriptions', () => {
+    expect(getSession(day('2026-10-27')).run?.detail).toContain('10:00–11:05 /mi')
+    expect(getSession(day('2027-02-04')).run?.detail).toContain('3:49')
+    expect(getSession(day('2027-01-14')).run?.detail).toContain('8:20 /mi')
+    const faster = { ...DEFAULT_PROFILE, twoMileSeconds: 14 * 60 }
+    expect(getSession(day('2027-01-14'), faster).run?.detail).not.toContain('8:20 /mi')
   })
 })

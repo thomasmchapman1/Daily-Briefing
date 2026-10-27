@@ -3,6 +3,7 @@ import { addDays, daysBetween, fromIsoDate, isoDate } from '../lib/date'
 import { BODY_FIELDS, BODY_LABELS, formatDuration, formatPace, isValidLog, type FitnessLog } from '../fitness/log'
 import { LIFT_NAMES, PLAN, PLAN_START, PLAN_WEEKS, RACE_DAY, getSession, weekOf, type LiftId } from '../fitness/plan'
 import type { GarminWeeks } from '../fitness/merge'
+import { formatPaceSeconds, pacesFor, strengthTargets, type Profile } from '../fitness/profile'
 import { bodySeries, garminRestingHr, latest, liftHistory, movingAverage, nutritionAdvice, plannedWeight, runHistory, weeklyLoss, weeklyMiles } from '../fitness/stats'
 import type { SyncStatus } from '../fitness/useFitnessLog'
 import { Legend, LineChart, PlanColumns } from './charts'
@@ -12,6 +13,7 @@ interface Props {
   today: Date
   log: FitnessLog
   garmin: GarminWeeks
+  profile: Profile
   goalWeight: number
   goalWaist: number
   sync: SyncStatus
@@ -44,13 +46,17 @@ const MILESTONES = [
   { date: RACE_DAY, text: 'OKC Marathon', waist: 32 },
 ]
 
-const STRENGTH: { id: LiftId; start: number | null; target: number | null }[] = [
-  { id: 'squat', start: 200, target: 225 },
-  { id: 'bench', start: 135, target: 155 },
-  { id: 'deadlift', start: 260, target: 275 },
-  { id: 'row', start: null, target: null },
-  { id: 'ohp', start: null, target: null },
-]
+/** Your current maxes (from settings) and the plan's targets worked out from them. */
+function strengthRows(p: Profile): { id: LiftId; start: number | null; target: number | null }[] {
+  const t = strengthTargets(p)
+  return [
+    { id: 'squat', start: p.squatMax, target: t.squat },
+    { id: 'bench', start: p.benchMax, target: t.bench },
+    { id: 'deadlift', start: p.deadliftMax, target: t.deadlift },
+    { id: 'row', start: null, target: null },
+    { id: 'ohp', start: null, target: null },
+  ]
+}
 
 const fmt = (iso: string, opts: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short' }) =>
   fromIsoDate(iso).toLocaleDateString('en-GB', opts)
@@ -121,7 +127,7 @@ function syncText(sync: SyncStatus): string {
   }
 }
 
-export function ProgressScreen({ today, log, garmin, goalWeight, goalWaist, sync, onSyncNow, onImport, onClose }: Props) {
+export function ProgressScreen({ today, log, garmin, profile, goalWeight, goalWaist, sync, onSyncNow, onImport, onClose }: Props) {
   const [liftId, setLiftId] = useState<LiftId>('squat')
   const [importMsg, setImportMsg] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
@@ -147,11 +153,13 @@ export function ProgressScreen({ today, log, garmin, goalWeight, goalWaist, sync
   const thisWeek = week ? miles[week - 1] : null
 
   const history = liftHistory(log, liftId)
+  const STRENGTH = strengthRows(profile)
   const strength = STRENGTH.find((s) => s.id === liftId)!
+  const paces = pacesFor(profile)
 
   // Monday-to-Sunday of the current (or first) plan week.
   const weekStart = week ? fromIsoDate(PLAN[week - 1].start) : fromIsoDate(PLAN_START)
-  const days = Array.from({ length: 7 }, (_, i) => getSession(addDays(weekStart, i)))
+  const days = Array.from({ length: 7 }, (_, i) => getSession(addDays(weekStart, i), profile))
 
   const onFile = async (file: File) => {
     try {
@@ -259,8 +267,8 @@ export function ProgressScreen({ today, log, garmin, goalWeight, goalWaist, sync
           <thead>
             <tr>
               <th>Lift</th>
-              <th>Start</th>
-              <th>Best now</th>
+              <th>Your max</th>
+              <th>Best logged</th>
               <th>Target</th>
             </tr>
           </thead>
@@ -278,7 +286,7 @@ export function ProgressScreen({ today, log, garmin, goalWeight, goalWaist, sync
             })}
           </tbody>
         </table>
-        <p className="fine">Estimated from your logged sets of 10 reps or fewer (Epley formula). Gold means above your starting max.</p>
+        <p className="fine">Estimated from your logged sets of 10 reps or fewer (Epley formula). Gold means above your max in settings. Update your maxes there after a test, and the plan’s weights recalculate.</p>
         <div className="seg chart-seg" role="radiogroup" aria-label="Lift">
           {STRENGTH.map((s) => (
             <label key={s.id} className="seg-opt">
@@ -300,6 +308,41 @@ export function ProgressScreen({ today, log, garmin, goalWeight, goalWaist, sync
         ) : (
           <p className="empty-note">No {LIFT_NAMES[liftId].toLowerCase()} sets logged yet.</p>
         )}
+      </section>
+
+      <section className="section">
+        <div className="kicker-row">
+          <span className="kicker">Your paces</span>
+          <span className="kicker-meta">From your 2-mile · VDOT {paces.vdot.toFixed(0)}</span>
+        </div>
+        <table className="data-table tnum">
+          <tbody>
+            <tr>
+              <td>Easy and long runs</td>
+              <td>
+                {formatPaceSeconds(paces.easy[0])}–{formatPaceSeconds(paces.easy[1])} /mi
+              </td>
+            </tr>
+            <tr>
+              <td>Tempo</td>
+              <td>{formatPaceSeconds(paces.tempo)} /mi</td>
+            </tr>
+            <tr>
+              <td>800 m repeats</td>
+              <td>
+                {formatPaceSeconds(paces.interval800, 1)} each ({formatPaceSeconds(paces.interval)} /mi)
+              </td>
+            </tr>
+            <tr>
+              <td>Marathon pace (for now)</td>
+              <td>{formatPaceSeconds(paces.marathon)} /mi</td>
+            </tr>
+          </tbody>
+        </table>
+        <p className="fine">
+          Worked out with Jack Daniels’ VDOT formulas from your 2-mile time in settings. The marathon figure assumes full marathon training, so treat it
+          as a ceiling; your February 10K sets the real goal pace.
+        </p>
       </section>
 
       <section className="section">
