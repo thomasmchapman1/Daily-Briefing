@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react'
 import { load, save } from './lib/storage'
+import { DEFAULT_PROFILE, type Profile } from './fitness/profile'
 
 export interface Settings {
   city: string
@@ -20,6 +21,8 @@ export interface Settings {
   goalWaist: number
   /** Passphrase for cloud sync of the fitness log (the server's SYNC_KEY). Empty keeps it on this device. */
   syncKey: string
+  /** Your maxes and 2-mile time; the plan's weights and paces are worked out from them. */
+  profile: Profile
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -35,13 +38,15 @@ export const DEFAULT_SETTINGS: Settings = {
   goalWeight: 175,
   goalWaist: 32,
   syncKey: '',
+  profile: DEFAULT_PROFILE,
 }
 
 /** The first default city. A phone still saved on it moves to the current default. */
 const OLD_DEFAULT = { city: 'Brooklyn', lat: 40.6782, lon: -73.9442 }
 
 export function loadSettings(): Settings {
-  const settings = { ...DEFAULT_SETTINGS, ...load<Partial<Settings>>('settings', {}) }
+  const stored = load<Partial<Settings>>('settings', {})
+  const settings = { ...DEFAULT_SETTINGS, ...stored, profile: { ...DEFAULT_PROFILE, ...stored.profile } }
   if (settings.city === OLD_DEFAULT.city && settings.lat === OLD_DEFAULT.lat && settings.lon === OLD_DEFAULT.lon) {
     Object.assign(settings, { city: DEFAULT_SETTINGS.city, lat: DEFAULT_SETTINGS.lat, lon: DEFAULT_SETTINGS.lon })
   }

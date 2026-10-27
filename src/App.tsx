@@ -42,7 +42,7 @@ export default function App() {
   const [offset, setOffset] = useState(0)
   const viewDate = useMemo(() => addDays(today, offset), [today, offset])
   const viewIso = isoDate(viewDate)
-  const session = useMemo(() => getSession(viewDate), [viewDate])
+  const session = useMemo(() => getSession(viewDate, settings.profile), [viewDate, settings.profile])
   const viewDay = fitness.log[viewIso]
   const avgWeight = useMemo(() => {
     const upTo = bodySeries(fitness.log, 'weight').filter((p) => p.date <= viewIso)
@@ -92,6 +92,7 @@ export default function App() {
           today={today}
           log={fitness.log}
           garmin={fitness.garmin}
+          profile={settings.profile}
           goalWeight={settings.goalWeight}
           goalWaist={settings.goalWaist}
           sync={fitness.sync}

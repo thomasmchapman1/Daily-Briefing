@@ -6,6 +6,8 @@ import { geocodeCity } from '../weather/api'
 import { GoogleCalendarPicker } from './GoogleCalendarPicker'
 import type { WeatherSource } from '../weather/types'
 import { Sheet } from './Sheet'
+import { formatDuration, parseDuration } from '../fitness/log'
+import type { Profile } from '../fitness/profile'
 
 interface Props {
   settings: Settings
@@ -76,6 +78,8 @@ export function SettingsScreen({ settings, weatherSource, googleResult, onSave, 
   const [draft, setDraft] = useState(settings)
   const [lookup, setLookup] = useState<string | null>(null)
   const set = <K extends keyof Settings>(key: K, value: Settings[K]) => setDraft((d) => ({ ...d, [key]: value }))
+  const setProfile = <K extends keyof Profile>(key: K, value: Profile[K]) => setDraft((d) => ({ ...d, profile: { ...d.profile, [key]: value } }))
+  const [twoMile, setTwoMile] = useState(formatDuration(settings.profile.twoMileSeconds))
 
   const findCity = async () => {
     setLookup('Looking up…')
@@ -201,6 +205,52 @@ export function SettingsScreen({ settings, weatherSource, googleResult, onSave, 
               autoCapitalize="off"
               autoCorrect="off"
               spellCheck={false}
+            />
+          )}
+        </Field>
+        <span className="field-row">
+          {(
+            [
+              ['benchMax', 'Bench max'],
+              ['squatMax', 'Squat max'],
+              ['deadliftMax', 'Deadlift max'],
+            ] as const
+          ).map(([key, label]) => (
+            <Field key={key} label={`${label} (lb)`}>
+              {(id) => (
+                <input
+                  id={id}
+                  className="input tnum"
+                  type="number"
+                  inputMode="numeric"
+                  value={draft.profile[key]}
+                  onChange={(e) => e.target.value && setProfile(key, Number(e.target.value))}
+                />
+              )}
+            </Field>
+          ))}
+        </span>
+        <Field
+          label="2-mile time"
+          hint={
+            twoMile && parseDuration(twoMile) == null
+              ? 'Type it as minutes:seconds, e.g. 15:28.'
+              : 'Your one-rep maxes set every lifting weight in the plan, and your 2-mile time sets your run paces. Update them after a test.'
+          }
+        >
+          {(id) => (
+            <input
+              id={id}
+              className="input tnum"
+              inputMode="numeric"
+              placeholder="15:28"
+              value={twoMile}
+              onChange={(e) => {
+                setTwoMile(e.target.value)
+                const sec = parseDuration(e.target.value)
+                // A 2-mile under 9 minutes or over 40 is a typo, not a time.
+                if (sec != null && sec >= 540 && sec <= 2400) setProfile('twoMileSeconds', sec)
+              }}
             />
           )}
         </Field>

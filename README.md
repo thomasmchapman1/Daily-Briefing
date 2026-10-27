@@ -74,6 +74,8 @@ The Scripture section shows one verse a day and sends you to your worship site (
 
 **Training** shows the day's session from the plan. Tap the circle to tick off a lift or run: blank sets fill in with the planned numbers. Tap the name to open warm-up sets, last time's numbers, and fields for each set's weight and reps (or a run's distance, time, heart rate and effort; pace is calculated). The arrows next to the date move to other days, so you can log something late or look ahead.
 
+**Your numbers.** Settings hold your one-rep maxes (bench, squat, deadlift) and your best 2-mile time (`src/fitness/profile.ts`). Squat, bench and deadlift weights scale from the plan's table (written for 135/200/260) to your maxes; rows and presses stay as written. Run paces come from the 2-mile time using Jack Daniels' VDOT formulas: easy, tempo, 800 m repeats and a provisional marathon pace, shown in each run and on the progress page. Update them after a test and every week recalculates.
+
 **Check-in** records weight, waist, body fat, sleep, resting heart rate, calories, protein and notes for the same day.
 
 **Progress & plan** (the button under Training) shows:
